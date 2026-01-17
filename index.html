@@ -1,120 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
 
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Search Console -->
     <meta name="google-site-verification" content="N1M-m4WjE8AOS7bfMLymKI0LDLnHrPKOGjiKD5J1x_w" />
 
-    <title>Maybaah – Software Developer Portfolio | Backend, Web, DevOps</title>
+    <title>
+        Artem Kovtoniuk – Software Developer Portfolio | Backend, Web, DevOps
+    </title>
 
-    <meta name="description" content="Maybaah portfolio – software developer specializing in backend, web development, automation, data scraping, DevOps, Laravel, Node.js and Python.">
-    <meta name="keywords" content="Maybaah, software developer, portfolio, backend developer, laravel, nodejs, python, devops, web developer, data scraping">
-    <meta name="author" content="Maybaah">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+            name="description"
+            content="Artem Kovtoniuk portfolio – software developer specializing in backend and web development, automation, data scraping and DevOps. Laravel, Node.js, TypeScript, Python."
+    />
 
-    <link rel="canonical" href="https://maybaah.github.io/">
+    <meta
+            name="keywords"
+            content="
+      Artem Kovtoniuk,
+      software developer,
+      backend developer,
+      web developer,
+      portfolio,
+      Laravel,
+      Node.js,
+      TypeScript,
+      Python,
+      DevOps,
+      automation,
+      data scraping,
+      Maybeez,
+      Maybaah
+    "
+    />
+
+    <meta name="author" content="Artem Kovtoniuk" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="canonical" href="https://maybaah.github.io/" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Maybaah – Software Developer Portfolio">
-    <meta property="og:description" content="Projects, experience and contact. Backend, Web, DevOps, Automation.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://maybaah.github.io/">
+    <meta property="og:title" content="Artem Kovtoniuk – Software Developer Portfolio" />
+    <meta
+            property="og:description"
+            content="Backend • Web • DevOps • Automation • Data Scraping"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://maybaah.github.io/" />
 
     <!-- Schema.org Person -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Maybaah",
-      "url": "https://maybaah.github.io/",
-      "jobTitle": "Software Developer",
-      "knowsAbout": ["Backend Development", "Web Development", "DevOps", "Automation", "Data Scraping"],
-      "sameAs": [
-        "https://github.com/Maybaah"
-      ]
-    }
+        {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Artem Kovtoniuk",
+            "url": "https://maybaah.github.io/",
+            "jobTitle": "Software Developer",
+            "description": "Backend and web developer specializing in automation, data scraping and scalable systems.",
+            "knowsAbout": [
+                "Backend Development",
+                "Web Development",
+                "DevOps",
+                "Automation",
+                "Data Scraping",
+                "Laravel",
+                "Node.js",
+                "TypeScript",
+                "Python",
+                "Docker",
+                "SQL"
+            ],
+            "sameAs": [
+                "https://github.com/Maybaah"
+            ]
+        }
     </script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #0f172a;
-            color: #e5e7eb;
-        }
-        header, section, footer {
-            max-width: 900px;
-            margin: auto;
-            padding: 20px;
-        }
-        h1, h2, h3 {
-            color: #38bdf8;
-        }
-        a {
-            color: #38bdf8;
-            text-decoration: none;
-        }
-        .project {
-            background: #020617;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-        }
-    </style>
 </head>
-<body>
 
-<header>
-    <h1>Maybaah – Software Developer</h1>
-    <p>Backend • Web • DevOps • Automation • Data Scraping</p>
-    <p><a href="projects.html">View my projects →</a></p>
+<body class="bg-gray-900 text-white">
+
+<!-- HEADER / NAV -->
+<header class="absolute inset-x-0 top-0 z-50">
+    <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
+        <div class="flex lg:flex-1">
+            <a href="index.html" class="-m-1.5 p-1.5 font-semibold text-white">
+                Artem Kovtoniuk
+            </a>
+        </div>
+
+        <div class="hidden lg:flex lg:gap-x-12">
+            <a href="projects.html" class="text-sm font-semibold text-white hover:text-indigo-400">Projects</a>
+            <a href="seo-diary.html" class="text-sm font-semibold text-white hover:text-indigo-400">SEO Diary</a>
+            <a href="contact.html" class="text-sm font-semibold text-white hover:text-indigo-400">Contact</a>
+        </div>
+
+        <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+            <a href="projects.html" class="text-sm font-semibold text-white hover:text-indigo-400">
+                View work →
+            </a>
+        </div>
+    </nav>
 </header>
 
-<section>
-    <h2>About Me</h2>
-    <p>
-        I am a software developer focused on backend development, automation and building scalable web services.
-        I work with Laravel, Node.js, Python, SQL, Docker and CI/CD. I enjoy solving complex problems and designing clean architectures.
-    </p>
-</section>
-
-<section>
-    <h2>Projects</h2>
-
-    <div class="project">
-        <h3>Filmweb Scraper (BeautifulSoup)</h3>
-        <p>Python script for scraping top movies from Filmweb, filtering results and exporting data to CSV.</p>
-        <p><strong>Technologies:</strong> Python, BeautifulSoup</p>
-        <a href="https://github.com/Maybaah/filmweb-scraper" target="_blank">View on GitHub</a>
+<!-- HERO -->
+<div class="relative isolate px-6 pt-14 lg:px-8">
+    <div
+            aria-hidden="true"
+            class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+    >
+        <div
+                style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"
+                class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36rem] -translate-x-1/2 rotate-30 bg-gradient-to-tr from-indigo-500 to-pink-500 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72rem]"
+        ></div>
     </div>
 
-    <div class="project">
-        <h3>Sequelize Abstraction Layer</h3>
-        <p>Custom abstraction layer for filters, sorting, pagination and includes on top of Sequelize ORM.</p>
-        <p><strong>Technologies:</strong> Node.js, TypeScript, Sequelize</p>
-        <a href="https://github.com/Maybaah/sequelize-abstraction" target="_blank">View on GitHub</a>
+    <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+        <div class="text-center">
+            <h1 class="text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
+                Software Developer building
+                <span class="text-indigo-400">scalable systems</span>
+            </h1>
+
+            <p class="mt-8 text-lg font-medium text-gray-400 sm:text-xl">
+                I specialize in backend and web development, automation and data scraping.
+                I work with Laravel, Node.js, TypeScript, Python, SQL, Docker and CI/CD.
+            </p>
+
+            <div class="mt-10 flex items-center justify-center gap-x-6">
+                <a
+                        href="projects.html"
+                        class="rounded-md bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-400"
+                >
+                    View projects
+                </a>
+                <a
+                        href="contact.html"
+                        class="text-sm font-semibold text-white hover:text-indigo-400"
+                >
+                    Contact me →
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div class="project">
-        <h3>Network Monitor (Tkinter)</h3>
-        <p>Desktop application for scanning local network, detecting new devices and sending Telegram notifications.</p>
-        <p><strong>Technologies:</strong> Python, Tkinter</p>
-        <a href="https://github.com/Maybaah/network-monitor" target="_blank">View on GitHub</a>
+    <div
+            aria-hidden="true"
+            class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+    >
+        <div
+                style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"
+                class="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36rem] -translate-x-1/2 bg-gradient-to-tr from-indigo-500 to-pink-500 opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72rem]"
+        ></div>
     </div>
-
-</section>
-
-<section>
-    <h2>Contact</h2>
-    <p>Email: your@email.com</p>
-    <p>GitHub: <a href="https://github.com/Maybaah" target="_blank">github.com/Maybaah</a></p>
-    <p>LinkedIn: <a href="#" target="_blank">LinkedIn profile</a></p>
-</section>
-
-<footer>
-    <p>© 2026 Maybaah. All rights reserved.</p>
-</footer>
+</div>
 
 </body>
 </html>
