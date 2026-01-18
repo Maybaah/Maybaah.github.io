@@ -2,13 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+
+    <!-- Performance optimization -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com" />
+
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <title>SEO Diary – Artem Kovtoniuk</title>
-    <meta name="description" content="SEO diary documenting website optimization steps, indexing and visibility progress." />
+    <title>SEO Diary – Artem Kovtoniuk | Software Developer</title>
+    <meta name="description" content="SEO diary documenting website optimization steps, indexing and visibility progress for Artem Kovtoniuk's portfolio." />
+    <meta name="keywords" content="SEO diary, website optimization, SEO documentation, indexing progress, search engine optimization" />
     <meta name="author" content="Artem Kovtoniuk" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://maybaah.github.io/seo-diary.html" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="SEO Diary – Artem Kovtoniuk" />
+    <meta property="og:description" content="SEO diary documenting website optimization steps, indexing and visibility progress." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://maybaah.github.io/seo-diary.html" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="SEO Diary – Artem Kovtoniuk" />
+    <meta name="twitter:description" content="SEO diary documenting website optimization steps, indexing and visibility progress." />
+
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "SEO Diary – Artem Kovtoniuk",
+        "url": "https://maybaah.github.io/seo-diary.html",
+        "description": "A chronological record of SEO actions, time spent and observed effects"
+    }
+    </script>
 </head>
 
 <body class="bg-gray-900 text-white">
@@ -27,12 +57,30 @@
 </header>
 
 <main class="relative isolate px-6 pt-32 lg:px-8 max-w-4xl mx-auto">
-    <h1 class="text-4xl font-semibold sm:text-5xl">SEO Diary</h1>
+    <h1 class="text-4xl font-semibold sm:text-5xl">SEO Diary/Blog</h1>
     <p class="mt-4 text-gray-400">
         A chronological record of SEO actions, time spent and observed effects.
     </p>
 
     <div class="mt-10 space-y-6">
+        <div class="rounded-xl border border-white/10 bg-gray-800 p-6">
+            <h2 class="text-xl font-semibold">Creating the SEO Diary Page</h2>
+            <p class="mt-2 text-gray-400">
+                This SEO Diary page serves as both a documentation tool and a demonstration of the website's evolution.
+                The idea behind this page was to create a transparent record of all SEO-related work, decisions, and outcomes
+                for this portfolio project. It allows visitors to understand the optimization journey and serves as a reference
+                for future improvements.
+            </p>
+            <p class="mt-2 text-gray-400">
+                The page itself follows SEO best practices with proper meta tags, structured data (Blog schema), and semantic HTML.
+                By documenting SEO activities chronologically, this page also adds unique content to the website, which helps with
+                indexing and provides value to both search engines and visitors interested in SEO practices.
+            </p>
+            <p class="mt-2 text-sm text-gray-500">
+                Approach: Transparent documentation of SEO work as both a learning tool and a showcase of best practices.
+            </p>
+        </div>
+
         <div class="rounded-xl border border-white/10 bg-gray-800 p-6">
             <h2 class="text-xl font-semibold">15.01.2026 – Website launch</h2>
             <p class="mt-2 text-gray-400">
@@ -70,6 +118,34 @@
             <p class="mt-2 text-sm text-gray-500">
                 Result: improved site structure, better crawlability, clearer content hierarchy.
                 Indexing status monitored in Google Search Console.
+            </p>
+        </div>
+
+        <div class="rounded-xl border border-white/10 bg-gray-800 p-6">
+            <h2 class="text-xl font-semibold">18.01.2026 – Comprehensive SEO optimization across all pages</h2>
+
+            <p class="mt-2 text-gray-400">
+                Conducted a full SEO audit and implemented missing SEO elements across all pages. Added Open Graph tags
+                and Twitter Card meta tags to contact.html, projects.html, and seo-diary.html for improved social media sharing.
+                Enhanced structured data with appropriate Schema.org types: ContactPage for contact.html and Blog for seo-diary.html.
+            </p>
+
+            <p class="mt-2 text-gray-400">
+                Added keywords meta tags to contact.html and seo-diary.html to match the comprehensive approach used on other pages.
+                Implemented robots meta tags on all pages for better crawl control. Added performance optimization tags (preconnect,
+                dns-prefetch) to all pages for faster external resource loading.
+            </p>
+
+            <p class="mt-2 text-gray-400">
+                Enhanced projects.html Schema.org data with detailed ItemList containing individual project entries as SoftwareApplication
+                objects with descriptions, categories, and programming languages. Updated sitemap.xml to include lastmod dates for all URLs,
+                improving search engine understanding of content freshness.
+            </p>
+
+            <p class="mt-2 text-sm text-gray-500">
+                Result: Complete SEO consistency across all pages. All pages now have comprehensive meta tags, structured data,
+                and social media optimization. Improved sitemap provides better indexing signals. Expected improvements in social
+                media link previews and search engine understanding of page content.
             </p>
         </div>
 

@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+
+    <!-- Performance optimization -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com" />
+
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <title>Projects – Artem Kovtoniuk | Software Developer</title>
@@ -9,15 +15,55 @@
     <meta name="keywords" content="Artem Kovtoniuk projects, backend projects, web development, Laravel, Node.js, Python, DevOps" />
     <meta name="author" content="Artem Kovtoniuk" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://maybaah.github.io/projects.html" />
 
+    <!-- Open Graph -->
+    <meta property="og:title" content="Projects – Artem Kovtoniuk | Software Developer" />
+    <meta property="og:description" content="Software development projects by Artem Kovtoniuk. Backend, web development, automation, data scraping, DevOps." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://maybaah.github.io/projects.html" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Projects – Artem Kovtoniuk" />
+    <meta name="twitter:description" content="Software development projects by Artem Kovtoniuk. Backend, web development, automation, DevOps." />
+
+    <!-- Schema.org -->
     <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            "name": "Projects – Artem Kovtoniuk",
-            "url": "https://maybaah.github.io/projects.html"
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Projects – Artem Kovtoniuk",
+        "url": "https://maybaah.github.io/projects.html",
+        "description": "Software development projects by Artem Kovtoniuk. Backend, web development, automation, data scraping, DevOps.",
+        "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": [
+                {
+                    "@type": "SoftwareApplication",
+                    "name": "Filmweb Scraper",
+                    "description": "Python scraper collecting top-rated movies from Filmweb and exporting structured CSV data.",
+                    "applicationCategory": "Data Scraping",
+                    "programmingLanguage": ["Python"]
+                },
+                {
+                    "@type": "SoftwareApplication",
+                    "name": "Sequelize Abstraction Layer",
+                    "description": "Abstraction layer simplifying filtering, pagination and permission validation on top of Sequelize ORM.",
+                    "applicationCategory": "Web Development",
+                    "programmingLanguage": ["JavaScript", "TypeScript"]
+                },
+                {
+                    "@type": "SoftwareApplication",
+                    "name": "Network Monitor",
+                    "description": "Desktop application for scanning local networks and sending Telegram notifications.",
+                    "applicationCategory": "Network Tools",
+                    "programmingLanguage": ["Python"]
+                }
+            ]
         }
+    }
     </script>
 </head>
 
