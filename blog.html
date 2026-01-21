@@ -10,9 +10,9 @@
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <title>Blog – Artem Kovtoniuk | SEO Indexing Guide</title>
-    <meta name="description" content="An in-depth guide to SEO indexing: how search engines discover, crawl, and index web pages. Sitemaps, robots.txt, Google Search Console, and best practices." />
-    <meta name="keywords" content="SEO indexing, search engine indexing, crawl, Google index, sitemap, robots.txt, Search Console, technical SEO, crawlability" />
+    <title>Blog – Artem Kovtoniuk | SEO, Web Performance &amp; Development</title>
+    <meta name="description" content="Articles on SEO, web development, and software engineering: Core Web Vitals, search engine indexing, sitemaps, and best practices." />
+    <meta name="keywords" content="Core Web Vitals, LCP, CLS, INP, SEO indexing, search engine indexing, sitemap, technical SEO, web performance, frontend" />
     <meta name="author" content="Artem Kovtoniuk" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -23,18 +23,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Blog – SEO Indexing: A Complete Guide | Artem Kovtoniuk" />
-    <meta property="og:description" content="An in-depth guide to SEO indexing: how search engines discover, crawl, and index web pages." />
-    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Blog – Artem Kovtoniuk | SEO, Web Performance &amp; Development" />
+    <meta property="og:description" content="Articles on SEO, web development, and software engineering: Core Web Vitals, indexing, and best practices." />
+    <meta property="og:type" content="website" />
     <meta property="og:url" content="https://maybaah.github.io/blog.html" />
     <meta property="og:image" content="https://maybaah.github.io/og-image.jpg" />
-    <meta property="article:published_time" content="2026-01-19" />
-    <meta property="article:author" content="Artem Kovtoniuk" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Blog – SEO Indexing | Artem Kovtoniuk" />
-    <meta name="twitter:description" content="An in-depth guide to SEO indexing: how search engines discover, crawl, and index web pages." />
+    <meta name="twitter:title" content="Blog – Artem Kovtoniuk" />
+    <meta name="twitter:description" content="Articles on SEO, web development, and software engineering: Core Web Vitals, indexing, and best practices." />
     <meta name="twitter:image" content="https://maybaah.github.io/og-image.jpg" />
 
     <!-- Schema.org -->
@@ -51,18 +49,51 @@
     {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
+        "headline": "Core Web Vitals: A Developer's Guide to Speed and User Experience",
+        "url": "https://maybaah.github.io/blog.html#core-web-vitals",
+        "datePublished": "2026-01-18",
+        "dateModified": "2026-01-18",
+        "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "publisher": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "description": "A developer's guide to Core Web Vitals: LCP, INP, and CLS. How to measure them, fix common issues, and improve both UX and SEO."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Semantic HTML: Better Accessibility, SEO, and Maintainability",
+        "url": "https://maybaah.github.io/blog.html#semantic-html",
+        "datePublished": "2026-01-21",
+        "dateModified": "2026-01-21",
+        "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "publisher": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "description": "How semantic HTML improves accessibility, SEO, and maintainability. Header, nav, main, article, and when to use them."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "HTTP Caching: A Practical Guide to ETags, Cache-Control, and Invalidation",
+        "url": "https://maybaah.github.io/blog.html#http-caching",
+        "datePublished": "2026-01-20",
+        "dateModified": "2026-01-20",
+        "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "publisher": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "description": "A practical guide to HTTP caching: Cache-Control, ETag, Last-Modified, and when to invalidate or bypass the cache."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
         "headline": "Understanding SEO Indexing: How Search Engines Discover, Crawl, and Index Your Website",
-        "url": "https://maybaah.github.io/blog.html",
+        "url": "https://maybaah.github.io/blog.html#seo-indexing",
         "datePublished": "2026-01-19",
         "dateModified": "2026-01-19",
-        "author": {
-            "@type": "Person",
-            "name": "Artem Kovtoniuk"
-        },
-        "publisher": {
-            "@type": "Person",
-            "name": "Artem Kovtoniuk"
-        },
+        "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
+        "publisher": { "@type": "Person", "name": "Artem Kovtoniuk" },
         "description": "An in-depth guide to SEO indexing: how search engines discover, crawl, and index web pages. Sitemaps, robots.txt, Google Search Console, and best practices."
     }
     </script>
@@ -90,7 +121,75 @@
         Articles on SEO, web development, and software engineering.
     </p>
 
-    <article class="mt-12 rounded-xl border border-white/10 bg-gray-800 p-8">
+    <nav id="posts-nav" class="mt-8 rounded-xl border border-white/10 bg-gray-800/50 p-6" aria-label="All posts">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">All posts</h2>
+        <ul class="mt-4 space-y-3">
+            <li><a href="#core-web-vitals" class="text-indigo-400 hover:text-indigo-300 font-medium">Core Web Vitals: A Developer’s Guide to Speed and User Experience</a> <span class="text-gray-500 text-sm">18 Jan 2026</span></li>
+            <li><a href="#seo-indexing" class="text-indigo-400 hover:text-indigo-300 font-medium">Understanding SEO Indexing: How Search Engines Discover, Crawl, and Index Your Website</a> <span class="text-gray-500 text-sm">19 Jan 2026</span></li>
+            <li><a href="#http-caching" class="text-indigo-400 hover:text-indigo-300 font-medium">HTTP Caching: A Practical Guide to ETags, Cache-Control, and Invalidation</a> <span class="text-gray-500 text-sm">20 Jan 2026</span></li>
+            <li><a href="#semantic-html" class="text-indigo-400 hover:text-indigo-300 font-medium">Semantic HTML: Better Accessibility, SEO, and Maintainability</a> <span class="text-gray-500 text-sm">21 Jan 2026</span></li>
+        </ul>
+    </nav>
+
+    <!-- Posts in chronological order (oldest first) -->
+    <article class="mt-12 rounded-xl border border-white/10 bg-gray-800 p-8" id="core-web-vitals">
+        <h2 class="text-2xl font-semibold">Core Web Vitals: A Developer’s Guide to Speed and User Experience</h2>
+        <p class="mt-2 text-sm text-gray-500">Posted on 18 January 2026</p>
+
+        <div class="mt-8 prose prose-invert max-w-none text-gray-300 space-y-6">
+            <p>
+                Core Web Vitals (CWV) are a set of metrics that Google uses to measure real-user experience on the web. They focus on loading speed, interactivity, and visual stability—three areas that directly affect how people perceive your site. As a developer, understanding and improving these metrics can boost both search rankings and user satisfaction. This guide covers what each metric means, how to measure it, and practical ways to fix common issues.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">The Three Core Web Vitals</h3>
+            <p>
+                <strong>Largest Contentful Paint (LCP)</strong> measures loading performance. It marks the time from when the user navigates to the page until the largest image or text block is rendered. Google considers LCP "good" if it happens within 2.5 seconds. Slow LCP is often caused by heavy server response times, render-blocking CSS or JavaScript, or unoptimized images (large files, wrong formats, or missing dimensions).
+            </p>
+            <p>
+                <strong>First Input Delay (FID)</strong>, now replaced by <strong>Interaction to Next Paint (INP)</strong> in the official CWV set, captures interactivity. It measures the delay between a user’s first interaction (click, tap, keypress) and the browser’s response. Long tasks that block the main thread are the usual culprit. "Good" means under 100 milliseconds. INP uses the same 100 ms threshold and is based on the worst interaction over the page’s lifetime, so it better reflects real usage.
+            </p>
+            <p>
+                <strong>Cumulative Layout Shift (CLS)</strong> measures visual stability. It quantifies how much content jumps around during load (e.g. when an image or ad is inserted without reserved space, or when fonts swap). A CLS score of 0.1 or below is "good." Fixes include setting width/height on images and iframes, avoiding inserting content above existing content, and using <code class="text-indigo-300">font-display: optional</code> or preloading fonts to reduce layout shifts from font changes.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">How to Measure Core Web Vitals</h3>
+            <p>
+                You can use lab tools (Lighthouse in Chrome DevTools, or PageSpeed Insights) and field data. Lab tools run in a controlled environment and are useful for debugging; field data (from Chrome User Experience Report or Search Console’s "Core Web Vitals" report) reflects real users. For production, prioritize field data, but use Lighthouse to reproduce and fix issues. The "Performance" panel in DevTools also shows LCP, INP (or TBT as a proxy), and layout shift events.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Practical Fixes for LCP</h3>
+            <p>
+                Improve <strong>Time to First Byte (TTFB)</strong> with faster hosting, CDNs, and server-side caching. Reduce render-blocking resources: inline critical CSS, defer non-critical JS, and use <code class="text-indigo-300">loading="lazy"</code> only for below-the-fold images—the LCP element should not be lazy-loaded. Optimize the LCP image: use modern formats (WebP, AVIF), serve appropriately sized sources with <code class="text-indigo-300">srcset</code>, and preload it with <code class="text-indigo-300">&lt;link rel="preload"&gt;</code> when it’s the main hero image.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Practical Fixes for INP and Responsiveness</h3>
+            <p>
+                Break up long JavaScript tasks with <code class="text-indigo-300">setTimeout</code> or <code class="text-indigo-300">requestIdleCallback</code> so the main thread can handle user input sooner. Defer or lazy-load non-critical scripts. If you use a framework, avoid unnecessary re-renders and heavy work on the main thread during interactions. Web Workers can move expensive logic off the main thread. Reducing third-party scripts and minimizing their impact (loading async, self-hosting when possible) also helps.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Practical Fixes for CLS</h3>
+            <p>
+                Always set <code class="text-indigo-300">width</code> and <code class="text-indigo-300">height</code> on <code class="text-indigo-300">&lt;img&gt;</code> and <code class="text-indigo-300">&lt;iframe&gt;</code> so the browser reserves space before the asset loads. For injected content (ads, embeds), reserve a container with a minimum height or use CSS aspect-ratio. Preload important fonts and consider <code class="text-indigo-300">font-display: optional</code> to avoid a layout shift when the fallback is replaced. Animations should use <code class="text-indigo-300">transform</code> or <code class="text-indigo-300">opacity</code> to avoid triggering layout; avoid animating top, left, width, or height when possible.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Core Web Vitals and SEO</h3>
+            <p>
+                Core Web Vitals are part of Google’s page experience signals and can influence rankings. They are not the only factor—content, links, and technical SEO still matter—but pages that meet the "good" thresholds have a better chance in competitive SERPs. Search Console’s Core Web Vitals report groups URLs by status (good, needs improvement, poor) and by metric, which helps you prioritize. Improving CWV often goes hand in hand with general performance work: fewer and smaller assets, better caching, and leaner JavaScript benefit both users and crawlers.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Wrapping Up</h3>
+            <p>
+                Core Web Vitals give you a clear, user-centric target for performance. Focus on LCP for fast loading, INP for snappy interactions, and CLS for a stable layout. Measure with field data when possible, use Lighthouse to debug, and apply the fixes above—reserving space for images and iframes, breaking up long tasks, and optimizing the LCP resource—to move your pages into the "good" range. The result is better UX and a stronger foundation for SEO.
+            </p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <a href="#posts-nav" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">↑ All posts</a>
+            <a href="#seo-indexing" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">Next: SEO Indexing →</a>
+        </div>
+    </article>
+
+    <article class="mt-12 rounded-xl border border-white/10 bg-gray-800 p-8" id="seo-indexing">
         <h2 class="text-2xl font-semibold">Understanding SEO Indexing: How Search Engines Discover, Crawl, and Index Your Website</h2>
         <p class="mt-2 text-sm text-gray-500">Posted on 19 January 2026</p>
 
@@ -189,6 +288,94 @@
             <p>
                 SEO indexing is the foundation of organic search visibility. By understanding how discovery, crawling, rendering, and indexing work, you can remove technical barriers and give your most important pages the best chance to be included in search results. Combine solid technical setup—sitemaps, robots.txt, clean structure, and fast, crawlable pages—with consistent monitoring in Search Console and incremental content and link improvements. Over time, this will lead to more pages in the index and greater potential for ranking and traffic.
             </p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <a href="#core-web-vitals" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">← Previous: Core Web Vitals</a>
+            <span class="flex gap-4">
+                <a href="#posts-nav" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">↑ All posts</a>
+                <a href="#http-caching" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">Next: HTTP Caching →</a>
+            </span>
+        </div>
+    </article>
+
+<article class="mt-12 rounded-xl border border-white/10 bg-gray-800 p-8" id="http-caching">
+        <h2 class="text-2xl font-semibold">HTTP Caching: A Practical Guide to ETags, Cache-Control, and Invalidation</h2>
+        <p class="mt-2 text-sm text-gray-500">Posted on 20 January 2026</p>
+
+        <div class="mt-8 prose prose-invert max-w-none text-gray-300 space-y-6">
+            <p>
+                HTTP caching lets browsers and intermediate proxies store responses and reuse them instead of hitting your server on every request. Done well, it cuts bandwidth, reduces latency, and improves Core Web Vitals. Done poorly, users see stale content or unnecessary round-trips. This guide covers the main mechanisms—<code class="text-indigo-300">Cache-Control</code>, <code class="text-indigo-300">ETag</code>, and <code class="text-indigo-300">Last-Modified</code>—and when to invalidate or bypass the cache.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Cache-Control: The Main Lever</h3>
+            <p>
+                <code class="text-indigo-300">Cache-Control</code> is the primary header for defining cache behavior. <strong><code class="text-indigo-300">max-age=3600</code></strong> tells the client it can use a cached copy for 3600 seconds (1 hour) without revalidating. <strong><code class="text-indigo-300">public</code></strong> allows shared caches (e.g. CDNs) to store the response; <strong><code class="text-indigo-300">private</code></strong> restricts storage to the browser. <strong><code class="text-indigo-300">no-cache</code></strong> means “you may cache, but must revalidate with the server before using it”; <strong><code class="text-indigo-300">no-store</code></strong> means “do not store at all.” For static assets with hashed filenames (e.g. <code class="text-indigo-300">app.a1b2c3.js</code>), use <code class="text-indigo-300">max-age=31536000, immutable</code> so the browser can cache for a year without revalidation. For HTML that references those assets, use <code class="text-indigo-300">no-cache</code> or a short <code class="text-indigo-300">max-age</code> so users get fresh markup and thus fresh asset URLs when you deploy.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">ETag and Last-Modified: Conditional Requests</h3>
+            <p>
+                When the cache is stale or the client has <code class="text-indigo-300">no-cache</code>, it can send a conditional request. With <strong><code class="text-indigo-300">If-None-Match: &lt;etag&gt;</code></strong>, the server compares the current resource’s ETag to the one in the request; if they match, it responds <code class="text-indigo-300">304 Not Modified</code> and no body is transferred. <strong><code class="text-indigo-300">If-Modified-Since</code></strong> works similarly with <code class="text-indigo-300">Last-Modified</code>. ETags are usually stronger because they can reflect content changes even when the modification time is unchanged (e.g. after a restore). Use ETag or Last-Modified for HTML and API responses where you want to avoid re-downloading when nothing changed.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">When to Invalidate or Bypass</h3>
+            <p>
+                You can’t “invalidate” a browser cache from the server—you can only set shorter <code class="text-indigo-300">max-age</code>, use <code class="text-indigo-300">no-cache</code> so the client revalidates, or change the URL. Changing the URL is the most reliable: when you deploy new JS or CSS, the HTML (which should have a short cache life) now points to <code class="text-indigo-300">app.d4e5f6.js</code>, so the old cached file is simply unused. For API responses, <code class="text-indigo-300">no-cache</code> plus a strong ETag gives you revalidation without serving stale data. For user-specific or sensitive data, use <code class="text-indigo-300">private, no-store</code> so it isn’t stored in shared caches or reused inappropriately.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">A Simple Caching Strategy</h3>
+            <p>
+                <strong>HTML:</strong> <code class="text-indigo-300">Cache-Control: no-cache</code> (or <code class="text-indigo-300">max-age=0</code>) and ETag. The browser revalidates on each load; 304s when unchanged. <strong>JS/CSS with content hashes:</strong> <code class="text-indigo-300">Cache-Control: public, max-age=31536000, immutable</code>. No revalidation needed. <strong>Images and fonts with hashes:</strong> Same long <code class="text-indigo-300">max-age</code> and <code class="text-indigo-300">immutable</code>. <strong>API data that changes often:</strong> Short <code class="text-indigo-300">max-age</code> and/or <code class="text-indigo-300">no-cache</code> with ETag. This pattern keeps HTML as the “version manifest” for your assets while letting static resources be cached aggressively.
+            </p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <a href="#seo-indexing" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">← Previous: SEO Indexing</a>
+            <span class="flex gap-4">
+                <a href="#posts-nav" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">↑ All posts</a>
+                <a href="#semantic-html" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">Next: Semantic HTML →</a>
+            </span>
+        </div>
+    </article>
+
+<article class="mt-12 rounded-xl border border-white/10 bg-gray-800 p-8" id="semantic-html">
+        <h2 class="text-2xl font-semibold">Semantic HTML: Better Accessibility, SEO, and Maintainability</h2>
+        <p class="mt-2 text-sm text-gray-500">Posted on 21 January 2026</p>
+
+        <div class="mt-8 prose prose-invert max-w-none text-gray-300 space-y-6">
+            <p>
+                Semantic HTML means using elements that convey the meaning and structure of your content, not just how it looks. Tags like <code class="text-indigo-300">&lt;header&gt;</code>, <code class="text-indigo-300">&lt;nav&gt;</code>, <code class="text-indigo-300">&lt;main&gt;</code>, <code class="text-indigo-300">&lt;article&gt;</code>, and <code class="text-indigo-300">&lt;footer&gt;</code> describe the role of each section. Divs and spans, by contrast, carry no inherent meaning. Choosing the right elements improves accessibility for screen readers, helps search engines understand your page, and makes the code easier to maintain and style.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Why Semantics Matter for Accessibility</h3>
+            <p>
+                Assistive technologies rely on the DOM to build a structured view of the page. When you use <code class="text-indigo-300">&lt;nav&gt;</code>, screen readers can offer a “jump to navigation” option. Landmarks like <code class="text-indigo-300">&lt;main&gt;</code> let users skip repeated chrome and go straight to the primary content. Headings (<code class="text-indigo-300">&lt;h1&gt;</code>–<code class="text-indigo-300">&lt;h6&gt;</code>) form an outline that many users navigate by. Buttons should be <code class="text-indigo-300">&lt;button&gt;</code> or <code class="text-indigo-300">&lt;a&gt;</code> with an appropriate role, not <code class="text-indigo-300">&lt;div onclick="..."&gt;</code>—otherwise, they may be invisible to keyboard and screen-reader users. Proper semantics reduce the need for extra ARIA and make the page work better by default.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Semantic HTML and SEO</h3>
+            <p>
+                Search engines use HTML structure as a signal for what content is important. A single <code class="text-indigo-300">&lt;h1&gt;</code> per page, logical heading hierarchy, and sections wrapped in <code class="text-indigo-300">&lt;article&gt;</code> or <code class="text-indigo-300">&lt;section&gt;</code> help crawlers identify the main topic and supporting points. <code class="text-indigo-300">&lt;main&gt;</code> highlights the primary content; repeated sidebars or footers are less likely to dilute the focus. Good structure also supports rich results and featured snippets, which often pull from well-marked-up headings and lists. You don’t get a direct “semantic HTML” ranking factor, but clean structure makes it easier for algorithms to interpret and value your content.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Common Semantic Elements and When to Use Them</h3>
+            <p>
+                <strong><code class="text-indigo-300">&lt;header&gt;</code></strong> — Site or section branding, logo, top nav. <strong><code class="text-indigo-300">&lt;nav&gt;</code></strong> — Navigation links (main menu, breadcrumbs, table of contents). <strong><code class="text-indigo-300">&lt;main&gt;</code></strong> — One per page; the primary content. <strong><code class="text-indigo-300">&lt;article&gt;</code></strong> — Self-contained content (blog post, news item, card). <strong><code class="text-indigo-300">&lt;section&gt;</code></strong> — Thematic grouping with a heading. <strong><code class="text-indigo-300">&lt;aside&gt;</code></strong> — Tangentially related content (sidebar, pull quote). <strong><code class="text-indigo-300">&lt;footer&gt;</code></strong> — Info about the page or section (copyright, links). Use <code class="text-indigo-300">&lt;figure&gt;</code> and <code class="text-indigo-300">&lt;figcaption&gt;</code> for images with captions, and <code class="text-indigo-300">&lt;time datetime="..."&gt;</code> for machine-readable dates.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Maintainability and Styling</h3>
+            <p>
+                Semantic class names and elements make the DOM self-documenting. Future you—or another developer—can quickly see that a block is the main nav or an article. Styling becomes more predictable: you can target <code class="text-indigo-300">main</code> or <code class="text-indigo-300">article</code> without layering purely presentational classes. When design changes, the structure often stays the same, so you touch less markup. And if you ever strip CSS or use a reader view, the page still makes sense because the hierarchy is in the HTML, not only in visual layout.
+            </p>
+
+            <h3 class="text-xl font-semibold text-white mt-8">Getting Started</h3>
+            <p>
+                Audit existing pages: replace generic <code class="text-indigo-300">&lt;div&gt;</code>s with <code class="text-indigo-300">&lt;main&gt;</code>, <code class="text-indigo-300">&lt;nav&gt;</code>, <code class="text-indigo-300">&lt;article&gt;</code>, or <code class="text-indigo-300">&lt;section&gt;</code> where they fit. Ensure one <code class="text-indigo-300">&lt;h1&gt;</code> and a logical <code class="text-indigo-300">&lt;h2&gt;</code>–<code class="text-indigo-300">&lt;h6&gt;</code> order. Use the accessibility tree in DevTools or a screen reader to confirm that landmarks and headings match the intended structure. Small, incremental changes add up: semantics improve both the experience and the foundation of your front end.
+            </p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <a href="#http-caching" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">← Previous: HTTP Caching</a>
+            <a href="#posts-nav" class="text-indigo-400 hover:text-indigo-300 font-semibold text-sm">↑ All posts</a>
         </div>
     </article>
 
