@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade — Free Browser Mini-Games | Wordle, Minesweeper &amp; flowcode</title>
-  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper and the flowcode 3D typing trainer — no ads, no sign-up, leaderboards included." />
+  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper &amp; flowcode</title>
+  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper and the flowcode 3D typing trainer. No ads, no sign-up, leaderboards included." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/arcade/" />
@@ -13,7 +13,7 @@
 
   <!-- Open Graph -->
   <meta property="og:site_name" content="maybaah.github.io" />
-  <meta property="og:title" content="Maybaah's Arcade — Free Browser Mini-Games" />
+  <meta property="og:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
   <meta property="og:description" content="Wordle, Minesweeper and a 3D typing trainer. No ads, no sign-up, leaderboards included." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://maybaah.github.io/arcade/" />
@@ -23,7 +23,7 @@
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Maybaah's Arcade — Free Browser Mini-Games" />
+  <meta name="twitter:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
   <meta name="twitter:description" content="Wordle, Minesweeper and a 3D typing trainer. No ads, no sign-up, leaderboards included." />
   <meta name="twitter:image" content="https://maybaah.github.io/assets/og.png" />
 
@@ -42,7 +42,7 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Maybaah's Arcade — Browser Mini-Games",
+    "name": "Maybaah's Arcade: Browser Mini-Games",
     "url": "https://maybaah.github.io/arcade/",
     "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper and the flowcode 3D typing trainer.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
@@ -106,7 +106,6 @@
   <div class="container">
     <a class="wordmark" href="/">maybaah<span class="tld">.github.io</span></a>
     <div class="nav-links">
-      <a href="/#work">Work</a>
       <a href="/arcade/" aria-current="page">Arcade</a>
       <a href="/leaderboard/">Leaderboard</a>
       <a href="/#contact">Contact</a>
@@ -120,19 +119,11 @@
     <p class="eyebrow fade-up" style="--d:0;">Maybaah's arcade</p>
     <h1 class="fade-up" style="--d:1; margin-top: 16px;">Small games. Serious leaderboards.</h1>
     <p class="lead fade-up" style="--d:2; margin-top: 20px; max-width: 56ch;">
-      Hand-built for GitHub Pages in vanilla JavaScript — no ads, no sign-up,
+      Hand-built for GitHub Pages in vanilla JavaScript. No ads, no sign-up,
       no build step. Each game lives in its own repo, and every verified run
       lands on the global
       <a href="/leaderboard/" style="color: var(--text-primary); text-decoration: underline;">leaderboard</a>.
     </p>
-    <div class="fade-up" style="--d:3; margin-top: 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <label class="eyebrow" for="player-name" style="letter-spacing: 0.14em;">Player</label>
-      <input id="player-name" maxlength="16" autocomplete="nickname" spellcheck="false"
-             style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px;
-                    color: var(--text-primary); font-family: var(--font-mono); font-size: 13px;
-                    padding: 7px 12px; width: 160px;" />
-      <span class="mono" id="player-saved" style="font-size: 11px; color: var(--success); opacity: 0; transition: opacity 150ms ease;">saved</span>
-    </div>
   </header>
 
   <section class="section container" aria-label="Games">
@@ -146,7 +137,7 @@
         <p class="desc">Guess the five-letter word in six tries. One daily puzzle
           for everyone, unlimited practice runs.</p>
         <div class="game-stats">
-          <span>daily · <b id="st-daily">#—</b></span>
+          <span>daily · <b id="st-daily">#…</b></span>
           <span>your best · <b id="st-wordle">no runs yet</b></span>
         </div>
         <div class="actions">
@@ -163,9 +154,9 @@
         <p class="desc">The classic. Three difficulties, right-click flags,
           chording, first click always safe.</p>
         <div class="game-stats">
-          <span>beginner · <b id="st-mines-b">—</b></span>
-          <span>intermediate · <b id="st-mines-i">—</b></span>
-          <span>expert · <b id="st-mines-e">—</b></span>
+          <span>beginner · <b id="st-mines-b">none</b></span>
+          <span>intermediate · <b id="st-mines-i">none</b></span>
+          <span>expert · <b id="st-mines-e">none</b></span>
         </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/minesweeper/">Play</a>
@@ -178,11 +169,11 @@
           <h3>flowcode</h3>
           <span class="badge"><span class="dot"></span>Ranked</span>
         </header>
-        <p class="desc">3D typing trainer — words fly at you in cubes toward a red
+        <p class="desc">3D typing trainer: words fly at you in cubes toward a red
           horizon. Seven modes, coins, and its own global ranked boards.</p>
         <div class="game-stats">
           <span>boards · <b>global, in-game</b></span>
-          <span>flow · <b>20–200 wpm</b></span>
+          <span>flow · <b>20-200 wpm</b></span>
         </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/flowcode/">Play</a>
@@ -227,19 +218,7 @@
 <script src="/assets/arcade.js"></script>
 <script>
   (function () {
-    /* player name */
-    var input = document.getElementById("player-name");
-    var saved = document.getElementById("player-saved");
-    input.value = Arcade.getPlayer();
-    var t;
-    input.addEventListener("input", function () {
-      Arcade.setPlayer(input.value);
-      saved.style.opacity = "1";
-      clearTimeout(t);
-      t = setTimeout(function () { saved.style.opacity = "0"; }, 1200);
-    });
-
-    /* daily number — same epoch as the wordle game */
+    /* daily number, same epoch as the wordle game */
     var EPOCH = Date.UTC(2026, 0, 1);
     var now = new Date();
     var today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());

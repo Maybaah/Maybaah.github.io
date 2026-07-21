@@ -1,4 +1,4 @@
-/* Arcade — shared client for all maybaah.github.io mini-games.
+/* Arcade: shared client for all maybaah.github.io mini-games.
 
    Two layers, same pattern as flowcode:
    - a local localStorage store every game writes to (per-browser bests), and
@@ -70,7 +70,7 @@
   }
 
   function fmtTime(ms) {
-    if (ms == null) return "—";
+    if (ms == null) return "none";
     const total = Math.round(ms / 100) / 10;
     if (total < 60) return total.toFixed(1) + "s";
     const m = Math.floor(total / 60);

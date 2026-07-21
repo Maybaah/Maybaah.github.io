@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade Leaderboards — Wordle &amp; Minesweeper Global Best Scores | maybaah.github.io</title>
+  <title>Arcade Leaderboards: Wordle &amp; Minesweeper Global Best Scores | maybaah.github.io</title>
   <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, best Wordle daily runs, and flowcode's ranked typing boards. Every run is verified server-side." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-snippet:-1" />
@@ -80,7 +80,6 @@
   <div class="container">
     <a class="wordmark" href="/">maybaah<span class="tld">.github.io</span></a>
     <div class="nav-links">
-      <a href="/#work">Work</a>
       <a href="/arcade/">Arcade</a>
       <a href="/leaderboard/" aria-current="page">Leaderboard</a>
       <a href="/#contact">Contact</a>
@@ -95,7 +94,7 @@
     <h1 class="fade-up" style="--d:1; margin-top: 16px;">Leaderboards</h1>
     <p class="lead fade-up" style="--d:2; margin-top: 20px; max-width: 58ch;">
       Global boards for every game in the arcade. A run only lands here after a
-      server has verified it — Wordle against the day's answer, Minesweeper by
+      server has verified it: Wordle against the day's answer, Minesweeper by
       replaying your whole game, flowcode by replaying your keystroke tape.
     </p>
   </header>
@@ -365,9 +364,9 @@
       f.text().then(function (text) {
         try {
           Arcade.importAll(text);
-          note.textContent = "imported — local history restored";
+          note.textContent = "imported, local history restored";
         } catch {
-          note.textContent = "import failed — that file isn't an arcade export";
+          note.textContent = "import failed, that file isn't an arcade export";
         }
       });
       fileInput.value = "";
