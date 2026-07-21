@@ -82,18 +82,6 @@
     return new Date(ts).toISOString().slice(0, 10);
   }
 
-  function exportAll() {
-    return JSON.stringify(load(), null, 2);
-  }
-
-  function importAll(json) {
-    const d = JSON.parse(json);
-    if (!d || typeof d !== "object" || Array.isArray(d)) {
-      throw new Error("Not an arcade export");
-    }
-    save(d);
-  }
-
   /* ── global leaderboard API (same shape as flowcode's client) ── */
 
   function playerId() {
@@ -148,8 +136,6 @@
     bestMinesweeper,
     fmtTime,
     fmtDate,
-    exportAll,
-    importAll,
     playerId,
     top,
     submit,

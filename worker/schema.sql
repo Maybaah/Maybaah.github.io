@@ -4,7 +4,12 @@
 CREATE TABLE IF NOT EXISTS scores (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   game       TEXT    NOT NULL,          -- wordle / minesweeper / 2048 / flowcode
-  board      TEXT    NOT NULL,          -- wordle: daily-<day>; minesweeper: beginner/intermediate/expert; flowcode: <mode>-<day>
+  -- Every game but wordle keeps an all-time board and one board per day:
+  --   minesweeper  beginner            beginner-20260721
+  --   2048         classic             classic-20260721
+  --   flowcode     time-all            time-20260721
+  -- wordle is already one puzzle a day, so daily-<n> is its only board.
+  board      TEXT    NOT NULL,
   player     TEXT    NOT NULL,          -- client-generated id, one row per player per board
   name       TEXT    NOT NULL,
   score      INTEGER NOT NULL,          -- sortable rank key, lower is better

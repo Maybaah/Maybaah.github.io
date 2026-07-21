@@ -36,6 +36,18 @@ the game's word engine. The rows still land here, so `/leaderboard/` reads every
 board through a single API and a player keeps one identity across all four
 games.
 
+A finished run counts on two boards: one that keeps a player's best ever, and
+one for the day it was played, dated by the Worker's own clock so nobody can
+choose which day their run lands on. Wordle is the exception, being one puzzle
+per day already.
+
+| Game | All-time board | Daily board |
+| :-- | :-- | :-- |
+| Wordle | — | `daily-<n>` |
+| Minesweeper | `beginner` / `intermediate` / `expert` | `<difficulty>-<YYYYMMDD>` |
+| 2048 | `classic` | `classic-<YYYYMMDD>` |
+| flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
+
 Games load [`assets/arcade.js`](assets/arcade.js) from this repo: it holds the
 local run history (localStorage), the shared player identity and the API client
 for the Worker (`https://arcade-leaderboard.maybeez.workers.dev`).

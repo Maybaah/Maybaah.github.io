@@ -118,13 +118,21 @@
         <button class="pill" data-diff="intermediate" aria-pressed="false">Intermediate</button>
         <button class="pill" data-diff="expert" aria-pressed="false">Expert</button>
       </div>
-      <p class="board-meta">all-time board · one row per player, your best clear counts</p>
+      <div class="sub-pills" role="group" aria-label="Range">
+        <button class="pill" data-msscope="all" aria-pressed="true">All-time</button>
+        <button class="pill" data-msscope="today" aria-pressed="false">Today</button>
+      </div>
+      <p class="board-meta" id="mines-meta">all-time board · one row per player, your best clear counts</p>
       <div id="mines-table"></div>
     </div>
 
     <!-- 2048 -->
     <div class="board-panel" id="panel-2048" role="tabpanel" hidden>
-      <p class="board-meta">all-time board · finished runs only, replayed move by move</p>
+      <div class="sub-pills" role="group" aria-label="Range">
+        <button class="pill" data-g2scope="all" aria-pressed="true">All-time</button>
+        <button class="pill" data-g2scope="today" aria-pressed="false">Today</button>
+      </div>
+      <p class="board-meta" id="g2048-meta">all-time board · finished runs only, replayed move by move</p>
       <div id="g2048-table"></div>
     </div>
 
@@ -138,9 +146,10 @@
         <button class="pill" data-mode="sudden" aria-pressed="false">Flawless</button>
         <button class="pill" data-mode="ramp" aria-pressed="false">Rush</button>
       </div>
-      <div class="sub-pills" role="group" aria-label="Day">
+      <div class="sub-pills" role="group" aria-label="Range">
         <button class="pill" data-fcday="today" aria-pressed="true">Today</button>
         <button class="pill" data-fcday="yesterday" aria-pressed="false">Yesterday</button>
+        <button class="pill" data-fcday="all" aria-pressed="false">All-time</button>
       </div>
       <p class="board-meta" id="flowcode-meta">ranked runs · seeded, no power-ups, no modifiers · resets at midnight UTC</p>
       <div id="flowcode-table"></div>
@@ -150,10 +159,7 @@
     </div>
 
     <div class="tools">
-      <button class="btn btn-secondary btn-sm" id="btn-export">Export local scores</button>
-      <button class="btn btn-secondary btn-sm" id="btn-import">Import local scores</button>
-      <input type="file" id="import-file" accept="application/json" hidden />
-      <span class="note" id="tools-note">every board lives in one verified database · your run history also stays in this browser</span>
+      <span class="note" id="tools-note">every board lives in one verified database · daily boards reset at midnight UTC</span>
     </div>
   </section>
 </main>
@@ -234,12 +240,28 @@
       }).catch(function () { el.innerHTML = offlineHtml; });
     }
 
+    /* Every game except wordle keeps two boards: one for a player's best ever
+       and one per day, which the worker names from its own clock. Wordle is
+       already one puzzle a day, so it has no second board. */
+    function utcDayKey(offset) {
+      var d = new Date();
+      d.setUTCDate(d.getUTCDate() - (offset || 0));
+      return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
+    }
+    var dailySuffix = function () { return "-" + utcDayKey(0); };
+
     /* ── minesweeper (global) ── */
     var curDiff = "beginner";
+    var msScope = "all";
     function renderMines() {
       var el = document.getElementById("mines-table");
+      var daily = msScope === "today";
+      var board = curDiff + (daily ? dailySuffix() : "");
+      document.getElementById("mines-meta").textContent = daily
+        ? "today's clears · " + utcDayKey(0) + " · resets at midnight UTC"
+        : "all-time board · one row per player, your best clear counts";
       el.innerHTML = loadingHtml;
-      Arcade.top("minesweeper", curDiff).then(function (data) {
+      Arcade.top("minesweeper", board).then(function (data) {
         el.innerHTML = table(
           ["Player", "Time", "When"],
           data.entries.map(function (s) {
@@ -249,17 +271,25 @@
               { html: Arcade.fmtDate(s.at), num: true }
             ];
           }),
-          "No verified " + curDiff + " clears yet.",
+          daily
+            ? "No " + curDiff + " clears today yet."
+            : "No verified " + curDiff + " clears yet.",
           'the field is untouched → <a href="/minesweeper/" style="text-decoration:underline;">play</a>'
         );
       }).catch(function () { el.innerHTML = offlineHtml; });
     }
 
     /* ── 2048 (global) ── */
+    var g2Scope = "all";
     function render2048() {
       var el = document.getElementById("g2048-table");
+      var daily = g2Scope === "today";
+      var board = "classic" + (daily ? dailySuffix() : "");
+      document.getElementById("g2048-meta").textContent = daily
+        ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
+        : "all-time board · finished runs only, replayed move by move";
       el.innerHTML = loadingHtml;
-      Arcade.top("2048", "classic").then(function (data) {
+      Arcade.top("2048", board).then(function (data) {
         el.innerHTML = table(
           ["Player", "Score", "Top tile", "Moves", "When"],
           data.entries.map(function (s) {
@@ -271,7 +301,7 @@
               { html: Arcade.fmtDate(s.at), num: true }
             ];
           }),
-          "No finished 2048 runs yet.",
+          daily ? "No finished 2048 runs today yet." : "No finished 2048 runs yet.",
           'play until the board jams → <a href="/2048/" style="text-decoration:underline;">play</a>'
         );
       }).catch(function () { el.innerHTML = offlineHtml; });
@@ -283,18 +313,15 @@
        other board, so they read back through the same client. */
     var fcMode = "daily";
     var fcDay = "today";
-    function fcDateSeed(offset) {
-      var d = new Date();
-      d.setUTCDate(d.getUTCDate() - (offset || 0));
-      return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
-    }
     function renderFlowcode() {
       var el = document.getElementById("flowcode-table");
-      var day = fcDateSeed(fcDay === "yesterday" ? 1 : 0);
-      document.getElementById("flowcode-meta").textContent =
-        fcMode + " board · " + day + " · seeded runs, no power-ups · resets at midnight UTC";
+      var allTime = fcDay === "all";
+      var day = utcDayKey(fcDay === "yesterday" ? 1 : 0);
+      document.getElementById("flowcode-meta").textContent = allTime
+        ? fcMode + " board · all-time · one row per player, best ranked run counts"
+        : fcMode + " board · " + day + " · seeded runs, no power-ups · resets at midnight UTC";
       el.innerHTML = loadingHtml;
-      Arcade.top("flowcode", fcMode + "-" + day).then(function (data) {
+      Arcade.top("flowcode", fcMode + "-" + (allTime ? "all" : day)).then(function (data) {
         el.innerHTML = table(
           ["Player", "Score", "WPM", "Acc", "Combo", "When"],
           data.entries.map(function (s) {
@@ -307,7 +334,9 @@
               { html: Arcade.fmtDate(s.at), num: true }
             ];
           }),
-          "No ranked " + fcMode + " runs for " + day + " yet.",
+          allTime
+            ? "No ranked " + fcMode + " runs yet."
+            : "No ranked " + fcMode + " runs for " + day + " yet.",
           'the board is warming up → <a href="/flowcode/" style="text-decoration:underline;">play ranked</a>'
         );
       }).catch(function () { el.innerHTML = offlineHtml; });
@@ -366,30 +395,24 @@
       });
     });
 
-    /* export / import of the local run history */
-    var note = document.getElementById("tools-note");
-    document.getElementById("btn-export").addEventListener("click", function () {
-      var blob = new Blob([Arcade.exportAll()], { type: "application/json" });
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "maybaah-arcade-scores.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
-    var fileInput = document.getElementById("import-file");
-    document.getElementById("btn-import").addEventListener("click", function () { fileInput.click(); });
-    fileInput.addEventListener("change", function () {
-      var f = fileInput.files[0];
-      if (!f) return;
-      f.text().then(function (text) {
-        try {
-          Arcade.importAll(text);
-          note.textContent = "imported, local history restored";
-        } catch {
-          note.textContent = "import failed, that file isn't an arcade export";
-        }
+    /* all-time vs today */
+    document.querySelectorAll("[data-msscope]").forEach(function (p) {
+      p.addEventListener("click", function () {
+        msScope = p.dataset.msscope;
+        document.querySelectorAll("[data-msscope]").forEach(function (q) {
+          q.setAttribute("aria-pressed", String(q === p));
+        });
+        renderMines();
       });
-      fileInput.value = "";
+    });
+    document.querySelectorAll("[data-g2scope]").forEach(function (p) {
+      p.addEventListener("click", function () {
+        g2Scope = p.dataset.g2scope;
+        document.querySelectorAll("[data-g2scope]").forEach(function (q) {
+          q.setAttribute("aria-pressed", String(q === p));
+        });
+        render2048();
+      });
     });
 
     renderWordle();

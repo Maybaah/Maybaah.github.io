@@ -514,14 +514,24 @@ async function handleSubmit(req, env, origin) {
   const run = verify(body);
   if (!run.ok) return json({ error: "run rejected", reason: run.reason }, 422, origin);
 
-  await db.prepare(
-    `INSERT INTO scores (game, board, player, name, score, detail, created_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-     ON CONFLICT(game, board, player) DO UPDATE SET
-       name = excluded.name, score = excluded.score,
-       detail = excluded.detail, created_at = excluded.created_at
-     WHERE excluded.score < scores.score`
-  ).bind(body.game, run.board, player, name, run.score, JSON.stringify(run.detail), Date.now()).run();
+  /* A run counts twice: once on the board that keeps a player's best ever, and
+     once on a board for the day it was played, dated by this Worker's clock so
+     nobody can pick which day their run belongs to. Wordle is already one
+     puzzle per day, so its single board is both. */
+  const detail = JSON.stringify(run.detail);
+  const at = Date.now();
+  const boards = body.game === "wordle" ? [run.board] : [run.board, run.board + "-" + day];
+
+  for (const board of boards) {
+    await db.prepare(
+      `INSERT INTO scores (game, board, player, name, score, detail, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+       ON CONFLICT(game, board, player) DO UPDATE SET
+         name = excluded.name, score = excluded.score,
+         detail = excluded.detail, created_at = excluded.created_at
+       WHERE excluded.score < scores.score`
+    ).bind(body.game, board, player, name, run.score, detail, at).run();
+  }
 
   const rank = await db.prepare(
     `SELECT COUNT(*) + 1 AS rank FROM scores WHERE game = ?1 AND board = ?2 AND score < ?3`
@@ -532,6 +542,7 @@ async function handleSubmit(req, env, origin) {
   return json({
     ok: true,
     board: run.board,
+    dailyBoard: boards.length > 1 ? boards[1] : null,
     rank: rank ? rank.rank : null,
     entries: parseEntries(results),
   }, 200, origin);
