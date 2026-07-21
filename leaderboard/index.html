@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>Arcade Leaderboards — Wordle &amp; Minesweeper Global Best Scores | maybaah.github.io</title>
-  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, best Wordle daily runs, and a link to flowcode's ranked boards. Every run is verified server-side." />
+  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, best Wordle daily runs, and flowcode's ranked typing boards. Every run is verified server-side." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/leaderboard/" />
@@ -94,9 +94,9 @@
     <p class="eyebrow fade-up" style="--d:0;">Hall of fame</p>
     <h1 class="fade-up" style="--d:1; margin-top: 16px;">Leaderboards</h1>
     <p class="lead fade-up" style="--d:2; margin-top: 20px; max-width: 58ch;">
-      Global boards for every game in the arcade. A run only lands here after the
+      Global boards for every game in the arcade. A run only lands here after a
       server has verified it — Wordle against the day's answer, Minesweeper by
-      replaying your whole game.
+      replaying your whole game, flowcode by replaying your keystroke tape.
     </p>
   </header>
 
@@ -130,16 +130,22 @@
 
     <!-- FLOWCODE -->
     <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden>
-      <div class="card" style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between;">
-        <div style="max-width: 52ch;">
-          <h2 style="font-size: 18px;">flowcode runs its own boards</h2>
-          <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">
-            The typing trainer has global ranked leaderboards — seeded daily runs,
-            no power-ups, no modifiers — served by its own worker and shown in-game.
-            Hit <span class="mono" style="color: var(--text-primary);">🏆 ranked</span> on the top bar.
-          </p>
-        </div>
-        <a class="btn btn-primary" href="/flowcode/">Open flowcode</a>
+      <div class="sub-pills" role="group" aria-label="Mode">
+        <button class="pill" data-mode="daily" aria-pressed="true">Daily</button>
+        <button class="pill" data-mode="time" aria-pressed="false">Time</button>
+        <button class="pill" data-mode="words" aria-pressed="false">Words</button>
+        <button class="pill" data-mode="endless" aria-pressed="false">Survival</button>
+        <button class="pill" data-mode="sudden" aria-pressed="false">Flawless</button>
+        <button class="pill" data-mode="ramp" aria-pressed="false">Rush</button>
+      </div>
+      <div class="sub-pills" role="group" aria-label="Day">
+        <button class="pill" data-fcday="today" aria-pressed="true">Today</button>
+        <button class="pill" data-fcday="yesterday" aria-pressed="false">Yesterday</button>
+      </div>
+      <p class="board-meta" id="flowcode-meta">ranked runs · seeded, no power-ups, no modifiers · resets at midnight UTC</p>
+      <div id="flowcode-table"></div>
+      <div style="margin-top: 20px;">
+        <a class="btn btn-secondary btn-sm" href="/flowcode/">Open flowcode</a>
       </div>
     </div>
 
@@ -249,6 +255,45 @@
       }).catch(function () { el.innerHTML = offlineHtml; });
     }
 
+    /* ── flowcode (global, served by flowcode's own worker) ── */
+    var FC_API = "https://flowcode-leaderboard.maybeez.workers.dev";
+    var fcMode = "daily";
+    var fcDay = "today";
+    function fcDateSeed(offset) {
+      var d = new Date();
+      d.setUTCDate(d.getUTCDate() - (offset || 0));
+      return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
+    }
+    function renderFlowcode() {
+      var el = document.getElementById("flowcode-table");
+      var day = fcDateSeed(fcDay === "yesterday" ? 1 : 0);
+      document.getElementById("flowcode-meta").textContent =
+        fcMode + " board · " + day + " · seeded runs, no power-ups · resets at midnight UTC";
+      el.innerHTML = loadingHtml;
+      fetch(FC_API + "/api/leaderboard?day=" + day + "&mode=" + fcMode, {
+        headers: { "Accept": "application/json" }
+      }).then(function (r) {
+        if (!r.ok) throw new Error("unavailable");
+        return r.json();
+      }).then(function (data) {
+        el.innerHTML = table(
+          ["Player", "Score", "WPM", "Acc", "Combo", "When"],
+          data.entries.map(function (s) {
+            return [
+              { html: nameCell(s.name) },
+              { html: String(s.score), num: true },
+              { html: String(s.wpm), num: true },
+              { html: s.acc + "%", num: true },
+              { html: "×" + s.maxCombo, num: true },
+              { html: Arcade.fmtDate(s.at), num: true }
+            ];
+          }),
+          "No ranked " + fcMode + " runs for " + day + " yet.",
+          'the board is warming up → <a href="/flowcode/" style="text-decoration:underline;">play ranked</a>'
+        );
+      }).catch(function () { el.innerHTML = offlineHtml; });
+    }
+
     /* tabs */
     var tabs = ["wordle", "minesweeper", "flowcode"];
     tabs.forEach(function (name) {
@@ -282,6 +327,26 @@
       });
     });
 
+    /* flowcode pills */
+    document.querySelectorAll("[data-mode]").forEach(function (p) {
+      p.addEventListener("click", function () {
+        fcMode = p.dataset.mode;
+        document.querySelectorAll("[data-mode]").forEach(function (q) {
+          q.setAttribute("aria-pressed", String(q === p));
+        });
+        renderFlowcode();
+      });
+    });
+    document.querySelectorAll("[data-fcday]").forEach(function (p) {
+      p.addEventListener("click", function () {
+        fcDay = p.dataset.fcday;
+        document.querySelectorAll("[data-fcday]").forEach(function (q) {
+          q.setAttribute("aria-pressed", String(q === p));
+        });
+        renderFlowcode();
+      });
+    });
+
     /* export / import of the local run history */
     var note = document.getElementById("tools-note");
     document.getElementById("btn-export").addEventListener("click", function () {
@@ -310,6 +375,7 @@
 
     renderWordle();
     renderMines();
+    renderFlowcode();
   })();
 </script>
 </body>
