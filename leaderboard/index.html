@@ -103,6 +103,7 @@
     <div class="tabs" role="tablist" aria-label="Game">
       <button class="tab" role="tab" id="tab-wordle" aria-selected="true">Wordle</button>
       <button class="tab" role="tab" id="tab-minesweeper" aria-selected="false">Minesweeper</button>
+      <button class="tab" role="tab" id="tab-2048" aria-selected="false">2048</button>
       <button class="tab" role="tab" id="tab-flowcode" aria-selected="false">flowcode</button>
     </div>
 
@@ -125,6 +126,12 @@
       </div>
       <p class="board-meta">all-time board · one row per player, your best clear counts</p>
       <div id="mines-table"></div>
+    </div>
+
+    <!-- 2048 -->
+    <div class="board-panel" id="panel-2048" role="tabpanel" hidden>
+      <p class="board-meta">all-time board · finished runs only, replayed move by move</p>
+      <div id="g2048-table"></div>
     </div>
 
     <!-- FLOWCODE -->
@@ -254,6 +261,28 @@
       }).catch(function () { el.innerHTML = offlineHtml; });
     }
 
+    /* ── 2048 (global) ── */
+    function render2048() {
+      var el = document.getElementById("g2048-table");
+      el.innerHTML = loadingHtml;
+      Arcade.top("2048", "classic").then(function (data) {
+        el.innerHTML = table(
+          ["Player", "Score", "Top tile", "Moves", "When"],
+          data.entries.map(function (s) {
+            return [
+              { html: nameCell(s.name) },
+              { html: String(s.points), num: true },
+              { html: String(s.maxTile), num: true },
+              { html: String(s.moves), num: true },
+              { html: Arcade.fmtDate(s.at), num: true }
+            ];
+          }),
+          "No finished 2048 runs yet.",
+          'play until the board jams → <a href="/2048/" style="text-decoration:underline;">play</a>'
+        );
+      }).catch(function () { el.innerHTML = offlineHtml; });
+    }
+
     /* ── flowcode (global, served by flowcode's own worker) ── */
     var FC_API = "https://flowcode-leaderboard.maybeez.workers.dev";
     var fcMode = "daily";
@@ -294,7 +323,7 @@
     }
 
     /* tabs */
-    var tabs = ["wordle", "minesweeper", "flowcode"];
+    var tabs = ["wordle", "minesweeper", "2048", "flowcode"];
     tabs.forEach(function (name) {
       document.getElementById("tab-" + name).addEventListener("click", function () {
         tabs.forEach(function (other) {
@@ -374,6 +403,7 @@
 
     renderWordle();
     renderMines();
+    render2048();
     renderFlowcode();
   })();
 </script>

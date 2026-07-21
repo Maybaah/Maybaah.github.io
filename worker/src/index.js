@@ -274,9 +274,116 @@ function verifyMinesweeper(body) {
   };
 }
 
+/* ═══════════════ 2048 ═══════════════ */
+
+/* Line of flat indices for each row/column, ordered from the destination edge
+   inward, so a slide always compacts toward index 0 of the line. Mirrors the
+   game's copy exactly. */
+const G2048_LINES = (() => {
+  const size = 4, out = {};
+  for (const dir of ["u", "r", "d", "l"]) {
+    const group = [];
+    for (let i = 0; i < size; i++) {
+      const line = [];
+      for (let j = 0; j < size; j++) {
+        if (dir === "l") line.push(i * size + j);
+        else if (dir === "r") line.push(i * size + (size - 1 - j));
+        else if (dir === "u") line.push(j * size + i);
+        else line.push((size - 1 - j) * size + i);
+      }
+      group.push(line);
+    }
+    out[dir] = group;
+  }
+  return out;
+})();
+
+function slide2048(values, dir) {
+  let moved = false, gained = 0;
+  for (const line of G2048_LINES[dir]) {
+    const seq = [];
+    for (const idx of line) if (values[idx]) seq.push({ v: values[idx], from: idx });
+
+    const result = [];
+    for (let i = 0; i < seq.length; i++) {
+      if (i + 1 < seq.length && seq[i].v === seq[i + 1].v) {
+        const merged = seq[i].v * 2;
+        gained += merged;
+        result.push(merged);
+        moved = true;
+        i++;
+      } else {
+        result.push(seq[i].v);
+      }
+    }
+
+    for (let k = 0; k < line.length; k++) {
+      const next = k < result.length ? result[k] : 0;
+      if (values[line[k]] !== next) moved = true;
+      values[line[k]] = next;
+    }
+  }
+  return { moved, gained };
+}
+
+function spawn2048(values, rnd) {
+  const empties = [];
+  for (let i = 0; i < values.length; i++) if (!values[i]) empties.push(i);
+  if (!empties.length) return;
+  const index = empties[Math.floor(rnd() * empties.length)];
+  values[index] = rnd() < 0.9 ? 2 : 4;
+}
+
+function movesLeft2048(values) {
+  for (let i = 0; i < values.length; i++) {
+    if (!values[i]) return true;
+    const r = (i / 4) | 0, c = i % 4;
+    if (c + 1 < 4 && values[i + 1] === values[i]) return true;
+    if (r + 1 < 4 && values[i + 4] === values[i]) return true;
+  }
+  return false;
+}
+
+function verify2048(body) {
+  const seed = Number(body.seed);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    return { ok: false, reason: "bad seed" };
+  }
+  const moves = body.moves;
+  if (typeof moves !== "string" || !/^[udlr]{1,20000}$/.test(moves)) {
+    return { ok: false, reason: "bad move log" };
+  }
+
+  const rnd = mulberry32(seed >>> 0);
+  const values = new Array(16).fill(0);
+  spawn2048(values, rnd);
+  spawn2048(values, rnd);
+
+  let score = 0;
+  for (const dir of moves) {
+    const step = slide2048(values, dir);
+    // the game only records moves that changed something, so a no-op here
+    // means the tape does not belong to this seed
+    if (!step.moved) return { ok: false, reason: "move log does not match the board" };
+    score += step.gained;
+    spawn2048(values, rnd);
+  }
+
+  if (movesLeft2048(values)) return { ok: false, reason: "that run is not finished" };
+
+  const maxTile = Math.max(...values);
+  return {
+    ok: true,
+    board: "classic",
+    // boards sort ascending, so a higher score has to compare lower
+    score: -score,
+    detail: { points: score, maxTile, moves: moves.length },
+  };
+}
+
 /* ═══════════════ plumbing ═══════════════ */
 
-const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper };
+const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper, "2048": verify2048 };
 
 const BOARD_RE = /^[a-z0-9-]{1,32}$/;
 
