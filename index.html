@@ -79,7 +79,6 @@
     <a class="wordmark" href="/" aria-current="page">maybaah<span class="tld">.github.io</span></a>
     <div class="nav-links">
       <a href="/arcade/">Arcade</a>
-      <a href="/leaderboard/">Leaderboard</a>
       <a href="/#contact">Contact</a>
       <a href="https://github.com/Maybaah" rel="me">GitHub&nbsp;↗</a>
     </div>
@@ -90,39 +89,16 @@
   <!-- HERO -->
   <header class="section container" style="padding-top: 96px;">
     <p class="eyebrow fade-up" style="--d:0;">Artem Kovtoniuk · Software Developer</p>
-    <h1 class="fade-up" style="--d:1; margin-top: 16px; max-width: 15ch;">I build backends, bots &amp; browser games.</h1>
+    <h1 class="fade-up" style="--d:1; margin-top: 16px; max-width: 15ch;">I build backends, bots &amp; automation.</h1>
     <p class="lead fade-up" style="--d:2; margin-top: 24px; max-width: 56ch;">
       Backend and web development with Node.js, TypeScript, Python and Laravel:
-      automation, scraping, CI/CD. After hours I ship mini-games straight to
-      GitHub Pages. No build step, no dependencies, just play.
+      automation, scraping, CI/CD.
     </p>
     <div class="fade-up" style="--d:3; margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
-      <a class="btn btn-primary" href="/arcade/">Enter the arcade</a>
+      <a class="btn btn-primary" href="/#contact">Get in touch</a>
       <a class="btn btn-secondary" href="https://github.com/Maybaah">GitHub&nbsp;↗</a>
     </div>
   </header>
-
-  <!-- ARCADE TEASER -->
-  <section class="section container" id="arcade-teaser">
-    <div class="card" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; justify-content: space-between;">
-      <div style="max-width: 48ch;">
-        <p class="eyebrow">The arcade</p>
-        <h2 style="margin-top: 10px;">Mini-games with leaderboards</h2>
-        <p style="color: var(--text-secondary); margin-top: 12px; font-size: 14px;">
-          Wordle, Minesweeper, flowcode and more, built by hand for GitHub Pages.
-          Every verified run lands on the global leaderboard.
-        </p>
-        <div class="game-stats" style="margin-top: 16px; border-top: none; padding-top: 0;" id="teaser-stats">
-          <span>wordle best · <b id="ts-wordle">no runs yet</b></span>
-          <span>minesweeper best · <b id="ts-mines">no runs yet</b></span>
-        </div>
-      </div>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <a class="btn btn-primary" href="/arcade/">Play now</a>
-        <a class="btn btn-secondary" href="/leaderboard/">Leaderboard</a>
-      </div>
-    </div>
-  </section>
 
   <!-- CONTACT -->
   <section class="section container" id="contact">
@@ -140,32 +116,10 @@
   <div class="container">
     <span>© 2026 Artem Kovtoniuk</span>
     <div class="links">
-      <a href="/arcade/">arcade</a>
-      <a href="/leaderboard/">leaderboard</a>
-      <a href="/flowcode/">flowcode</a>
+      <a href="mailto:artemcovtonyk2909@gmail.com">email</a>
       <a href="https://github.com/Maybaah/Maybaah.github.io">source</a>
     </div>
   </div>
 </footer>
-
-<script src="/assets/arcade.js"></script>
-<script>
-  (function () {
-    var w = Arcade.bestWordle();
-    if (w) {
-      document.getElementById("ts-wordle").textContent =
-        w.guesses + "/6 in " + Arcade.fmtTime(w.timeMs);
-    }
-    var diffs = ["beginner", "intermediate", "expert"];
-    for (var i = diffs.length - 1; i >= 0; i--) {
-      var m = Arcade.bestMinesweeper(diffs[i]);
-      if (m) {
-        document.getElementById("ts-mines").textContent =
-          Arcade.fmtTime(m.timeMs) + " (" + diffs[i] + ")";
-        break;
-      }
-    }
-  })();
-</script>
 </body>
 </html>
