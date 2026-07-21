@@ -1,0 +1,16 @@
+{
+  "name": "arcade-leaderboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker + D1 backing the maybaah.github.io arcade leaderboards",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute arcade --local --file=./schema.sql",
+    "db:remote": "wrangler d1 execute arcade --remote --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

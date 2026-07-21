@@ -1,0 +1,12 @@
+name = "arcade-leaderboard"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+# Created with:  wrangler d1 create arcade
+[[d1_databases]]
+binding = "DB"
+database_name = "arcade"
+database_id = "34bb6f35-2d7c-483d-9e7f-9445fb66c9d6"
+
+[observability]
+enabled = true
