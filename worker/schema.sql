@@ -3,8 +3,8 @@
 
 CREATE TABLE IF NOT EXISTS scores (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  game       TEXT    NOT NULL,          -- wordle / minesweeper / ...
-  board      TEXT    NOT NULL,          -- wordle: daily-<day>; minesweeper: beginner/intermediate/expert
+  game       TEXT    NOT NULL,          -- wordle / minesweeper / 2048 / flowcode
+  board      TEXT    NOT NULL,          -- wordle: daily-<day>; minesweeper: beginner/intermediate/expert; flowcode: <mode>-<day>
   player     TEXT    NOT NULL,          -- client-generated id, one row per player per board
   name       TEXT    NOT NULL,
   score      INTEGER NOT NULL,          -- sortable rank key, lower is better

@@ -4,7 +4,11 @@
    taken on faith from the client beyond elapsed time: a Wordle run is checked
    against the day's real answer, and a Minesweeper run ships its layout seed
    and move log so the Worker can rebuild the exact board and replay the game
-   to the win. One row per player per board; lower score is always better. */
+   to the win. One row per player per board; lower score is always better.
+
+   flowcode writes into the same table from its own Worker, which owns the
+   replay because it needs that game's word engine. Its boards are readable
+   from here so the leaderboard page can serve every game off one API. */
 "use strict";
 
 const ALLOWED_ORIGINS = [
@@ -385,6 +389,11 @@ function verify2048(body) {
 
 const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper, "2048": verify2048 };
 
+/* flowcode stores its rows in this database too, but it verifies them in its
+   own Worker, which is where its word engine lives. Its boards are readable
+   here so one page can render every game; submissions still go to that Worker. */
+const READ_ONLY_GAMES = ["flowcode"];
+
 const BOARD_RE = /^[a-z0-9-]{1,32}$/;
 
 function cleanName(v) {
@@ -440,7 +449,9 @@ function parseEntries(results) {
 async function handleLeaderboard(req, env, origin) {
   const url = new URL(req.url);
   const game = url.searchParams.get("game") || "";
-  if (!GAMES[game]) return json({ error: "bad game" }, 400, origin);
+  if (!GAMES[game] && !READ_ONLY_GAMES.includes(game)) {
+    return json({ error: "bad game" }, 400, origin);
+  }
   let board = url.searchParams.get("board") || "";
   if (game === "wordle" && !board) board = "daily-" + wordleDayNumber();
   if (!BOARD_RE.test(board)) return json({ error: "bad board" }, 400, origin);
@@ -468,7 +479,11 @@ async function handleSubmit(req, env, origin) {
   }
 
   const verify = GAMES[body.game];
-  if (!verify) return json({ error: "bad game" }, 400, origin);
+  if (!verify) {
+    return READ_ONLY_GAMES.includes(body.game)
+      ? json({ error: "wrong endpoint", reason: body.game + " runs are verified by their own worker" }, 400, origin)
+      : json({ error: "bad game" }, 400, origin);
+  }
 
   const name = cleanName(body.name);
   if (!name) return json({ error: "a name is required" }, 400, origin);
