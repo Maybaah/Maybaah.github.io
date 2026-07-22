@@ -385,9 +385,153 @@ function verify2048(body) {
   };
 }
 
+/* ═══════════════ snake ═══════════════ */
+
+/* A snake run is tick-discrete, so a seed plus the ticks at which the player
+   turned describes it completely. The tape is a run of <tickDelta><dir> pairs;
+   everything below mirrors the game's copy exactly. Boost never appears here:
+   it only shortens the client's timer, so it changes how long a run takes in
+   real time and not how many ticks it takes. */
+
+const SNAKE_W = 20, SNAKE_H = 20, SNAKE_CELLS = SNAKE_W * SNAKE_H;
+const SNAKE_START_LEN = 3;
+const SNAKE_MAX_TICKS = 50000;
+const SNAKE_MAX_EVENTS = 8000;
+const SNAKE_OPPOSITE = { u: "d", d: "u", l: "r", r: "l" };
+
+function snakeSeedForDay(day) {
+  return Math.imul(day, 2654435761) >>> 0;
+}
+
+/* free cells in ascending index order, then one draw */
+function snakeSpawnApple(occ, rnd) {
+  const free = [];
+  for (let i = 0; i < SNAKE_CELLS; i++) if (!occ[i]) free.push(i);
+  if (!free.length) return -1;
+  return free[Math.floor(rnd() * free.length)];
+}
+
+function snakeNewState(seed) {
+  const rnd = mulberry32(seed >>> 0);
+  const occ = new Uint8Array(SNAKE_CELLS);
+  const start = ((SNAKE_H / 2) | 0) * SNAKE_W + ((SNAKE_W / 2) | 0);
+  const body = [];
+  for (let i = 0; i < SNAKE_START_LEN; i++) {
+    body.push(start - i);
+    occ[start - i] = 1;
+  }
+  const st = { rnd, occ, body, dir: "r", apples: 0, steps: 0, route: 0, apple: -1, done: false };
+  st.apple = snakeSpawnApple(occ, rnd);
+  return st;
+}
+
+function snakeStep(st) {
+  const head = st.body[0];
+  let x = head % SNAKE_W, y = (head / SNAKE_W) | 0;
+  if (st.dir === "l") x--;
+  else if (st.dir === "r") x++;
+  else if (st.dir === "u") y--;
+  else y++;
+
+  if (x < 0 || x >= SNAKE_W || y < 0 || y >= SNAKE_H) { st.done = true; return; }
+  const next = y * SNAKE_W + x;
+
+  const last = st.body[st.body.length - 1];
+  const eat = next === st.apple;
+  // the tail cell is vacated on this same tick unless the apple is there
+  if (st.occ[next] && !(next === last && !eat)) { st.done = true; return; }
+
+  if (!eat) {
+    st.body.pop();
+    st.occ[last] = 0;
+  }
+  st.body.unshift(next);
+  st.occ[next] = 1;
+  st.steps++;
+
+  if (eat) {
+    st.apples++;
+    st.route = st.steps;
+    st.apple = snakeSpawnApple(st.occ, st.rnd);
+    if (st.apple < 0) st.done = true;
+  }
+}
+
+function verifySnake(body) {
+  const mode = body.mode === "daily" || body.mode === "classic" ? body.mode : null;
+  if (!mode) return { ok: false, reason: "bad mode" };
+
+  const today = utcDayKey();
+  let seed;
+  if (mode === "daily") {
+    // the client's seed is ignored: the day, and therefore the apples, are
+    // this Worker's to decide
+    if (Number(body.day) !== today) {
+      return { ok: false, reason: "that daily has rolled over, reload the page" };
+    }
+    seed = snakeSeedForDay(today);
+  } else {
+    seed = Number(body.seed);
+    if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+      return { ok: false, reason: "bad seed" };
+    }
+  }
+
+  const moves = body.moves;
+  if (typeof moves !== "string" || moves.length > 6 * SNAKE_MAX_EVENTS) {
+    return { ok: false, reason: "bad move log" };
+  }
+  if (!/^(\d{1,5}[udlr])*$/.test(moves)) return { ok: false, reason: "bad move log" };
+  const events = moves.match(/\d{1,5}[udlr]/g) || [];
+
+  const st = snakeNewState(seed);
+  let tick = 0, lastEventTick = 0, prevTick = -1;
+
+  for (const ev of events) {
+    const dir = ev[ev.length - 1];
+    const target = lastEventTick + Number(ev.slice(0, -1));
+    if (target > SNAKE_MAX_TICKS) return { ok: false, reason: "that run is too long" };
+    // the game applies at most one turn per tick, so a second one on the same
+    // tick is a tape no client could have produced
+    if (target <= prevTick) return { ok: false, reason: "two turns on one tick" };
+    while (tick < target) {
+      snakeStep(st);
+      tick++;
+      if (st.done) return { ok: false, reason: "move log runs past the end of the run" };
+    }
+    // the game only records turns that change the heading, so a repeat or a
+    // reversal means the tape does not belong to this run
+    if (dir === st.dir || dir === SNAKE_OPPOSITE[st.dir]) {
+      return { ok: false, reason: "move log does not match the run" };
+    }
+    st.dir = dir;
+    prevTick = target;
+    lastEventTick = target;
+  }
+
+  // with no turns left the snake always reaches a wall, so this terminates
+  while (!st.done) {
+    snakeStep(st);
+    tick++;
+    if (tick > SNAKE_MAX_TICKS) return { ok: false, reason: "that run is too long" };
+  }
+
+  return {
+    ok: true,
+    board: mode === "daily" ? "daily-" + today : "classic",
+    /* Boards sort ascending, so more apples has to compare lower; equal apples
+       are broken by the shorter route. The route is measured to the last apple,
+       not to the crash: the steps a snake takes while dying say nothing about
+       how well it ate, and counting them would let anyone shave their tiebreak
+       by cutting the tape short of the crash. */
+    score: -(st.apples * 1000000) + st.route,
+    detail: { apples: st.apples, steps: st.route, total: st.steps, length: st.body.length, mode },
+  };
+}
+
 /* ═══════════════ plumbing ═══════════════ */
 
-const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper, "2048": verify2048 };
+const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper, "2048": verify2048, snake: verifySnake };
 
 /* flowcode stores its rows in this database too, but it verifies them in its
    own Worker, which is where its word engine lives. Its boards are readable
@@ -516,11 +660,11 @@ async function handleSubmit(req, env, origin) {
 
   /* A run counts twice: once on the board that keeps a player's best ever, and
      once on a board for the day it was played, dated by this Worker's clock so
-     nobody can pick which day their run belongs to. Wordle is already one
-     puzzle per day, so its single board is both. */
+     nobody can pick which day their run belongs to. A board that is already
+     dated (wordle's daily, snake's daily seed) is both at once. */
   const detail = JSON.stringify(run.detail);
   const at = Date.now();
-  const boards = body.game === "wordle" ? [run.board] : [run.board, run.board + "-" + day];
+  const boards = run.board.startsWith("daily-") ? [run.board] : [run.board, run.board + "-" + day];
 
   for (const board of boards) {
     await db.prepare(

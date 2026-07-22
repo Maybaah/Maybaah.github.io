@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper, 2048 &amp; flowcode</title>
-  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper, 2048 and the flowcode 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper, 2048, Snake &amp; flowcode</title>
+  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper, 2048, Snake and the flowcode 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/arcade/" />
@@ -14,7 +14,7 @@
   <!-- Open Graph -->
   <meta property="og:site_name" content="maybaah.github.io" />
   <meta property="og:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
-  <meta property="og:description" content="Wordle, Minesweeper, 2048 and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <meta property="og:description" content="Wordle, Minesweeper, 2048, Snake and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://maybaah.github.io/arcade/" />
   <meta property="og:image" content="https://maybaah.github.io/assets/og.png" />
@@ -24,7 +24,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
-  <meta name="twitter:description" content="Wordle, Minesweeper, 2048 and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <meta name="twitter:description" content="Wordle, Minesweeper, 2048, Snake and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta name="twitter:image" content="https://maybaah.github.io/assets/og.png" />
 
   <!-- Icons -->
@@ -44,7 +44,7 @@
     "@type": "CollectionPage",
     "name": "Maybaah's Arcade: Browser Mini-Games",
     "url": "https://maybaah.github.io/arcade/",
-    "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper, 2048 and the flowcode 3D typing trainer.",
+    "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper, 2048, Snake and the flowcode 3D typing trainer.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
     "mainEntity": {
       "@type": "ItemList",
@@ -92,6 +92,18 @@
           "url": "https://maybaah.github.io/flowcode/",
           "description": "3D typing trainer: words fly at you in cubes and drift toward a red horizon line. Ranked daily boards.",
           "genre": "Typing game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 5,
+          "name": "Snake",
+          "url": "https://maybaah.github.io/snake/",
+          "description": "Eat apples, grow long, do not hit the wall. Daily seed challenge and a replay-verified global leaderboard.",
+          "genre": "Arcade game",
           "gamePlatform": "Web browser",
           "operatingSystem": "Any",
           "applicationCategory": "Game",
@@ -203,12 +215,29 @@
         </div>
       </article>
 
-      <article class="game-card soon fade-up" style="--d:6;" aria-label="Coming soon">
+      <article class="game-card fade-up" style="--d:6;">
         <header>
-          <h3>Cabinet 05</h3>
+          <h3>Snake</h3>
+          <span class="badge"><span class="dot"></span>Online</span>
+        </header>
+        <p class="desc">Eat apples, grow long, do not clip the wall or your own
+          tail. Daily seed puts everyone on the same apples.</p>
+        <div class="game-stats">
+          <span>your best · <b id="st-snake">no runs yet</b></span>
+          <span>longest · <b id="st-snake-len">none</b></span>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/snake/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/snake">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card soon fade-up" style="--d:7;" aria-label="Coming soon">
+        <header>
+          <h3>Cabinet 06</h3>
           <span class="badge"><span class="dot off"></span>Soon</span>
         </header>
-        <p class="desc">Under construction. Snake? Tetris? Solitaire? Vote by
+        <p class="desc">Under construction. Tetris? Solitaire? Breakout? Vote by
           opening an issue on the repo.</p>
         <div class="game-stats">
           <span>status · <b>wiring the CRT</b></span>
@@ -260,6 +289,15 @@
       var top = runs.slice().sort(function (a, b) { return b.points - a.points; })[0];
       document.getElementById("st-2048").textContent = top.points + " pts";
       document.getElementById("st-2048-tile").textContent = top.maxTile;
+    }
+
+    var snake = Arcade.getScores("snake");
+    if (snake.length) {
+      var bestSnake = snake.slice().sort(function (a, b) {
+        return b.apples - a.apples || a.steps - b.steps;
+      })[0];
+      document.getElementById("st-snake").textContent = bestSnake.apples + " apples";
+      document.getElementById("st-snake-len").textContent = bestSnake.apples + 3;
     }
   })();
 </script>

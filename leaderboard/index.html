@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade Leaderboards: Wordle &amp; Minesweeper Global Best Scores | maybaah.github.io</title>
-  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, best Wordle daily runs, and flowcode's ranked typing boards. Every run is verified server-side." />
+  <title>Arcade Leaderboards: Wordle, Minesweeper, 2048 &amp; Snake Global Best Scores | maybaah.github.io</title>
+  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, best Wordle daily runs, top 2048 scores, the Snake daily seed and flowcode's ranked typing boards. Every run is verified server-side." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/leaderboard/" />
@@ -14,7 +14,7 @@
   <!-- Open Graph -->
   <meta property="og:site_name" content="maybaah.github.io" />
   <meta property="og:title" content="Arcade Leaderboards | maybaah.github.io" />
-  <meta property="og:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper best times, flowcode ranked." />
+  <meta property="og:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper best times, 2048 scores, the Snake daily seed, flowcode ranked." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://maybaah.github.io/leaderboard/" />
   <meta property="og:image" content="https://maybaah.github.io/assets/og.png" />
@@ -22,7 +22,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Arcade Leaderboards | maybaah.github.io" />
-  <meta name="twitter:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper best times, flowcode ranked." />
+  <meta name="twitter:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper best times, 2048 scores, the Snake daily seed, flowcode ranked." />
   <meta name="twitter:image" content="https://maybaah.github.io/assets/og.png" />
 
   <!-- Icons -->
@@ -42,7 +42,7 @@
     "@type": "WebPage",
     "name": "Arcade Leaderboards",
     "url": "https://maybaah.github.io/leaderboard/",
-    "description": "Global leaderboards for the mini-games on maybaah.github.io: Wordle, Minesweeper and flowcode.",
+    "description": "Global leaderboards for the mini-games on maybaah.github.io: Wordle, Minesweeper, 2048, Snake and flowcode.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" }
   }
   </script>
@@ -98,6 +98,7 @@
       <button class="tab" role="tab" id="tab-wordle" aria-selected="true">Wordle</button>
       <button class="tab" role="tab" id="tab-minesweeper" aria-selected="false">Minesweeper</button>
       <button class="tab" role="tab" id="tab-2048" aria-selected="false">2048</button>
+      <button class="tab" role="tab" id="tab-snake" aria-selected="false">Snake</button>
       <button class="tab" role="tab" id="tab-flowcode" aria-selected="false">flowcode</button>
     </div>
 
@@ -134,6 +135,17 @@
       </div>
       <p class="board-meta" id="g2048-meta">all-time board · finished runs only, replayed move by move</p>
       <div id="g2048-table"></div>
+    </div>
+
+    <!-- SNAKE -->
+    <div class="board-panel" id="panel-snake" role="tabpanel" hidden>
+      <div class="sub-pills" role="group" aria-label="Range">
+        <button class="pill" data-snscope="all" aria-pressed="true">All-time</button>
+        <button class="pill" data-snscope="today" aria-pressed="false">Today</button>
+        <button class="pill" data-snscope="daily" aria-pressed="false">Daily seed</button>
+      </div>
+      <p class="board-meta" id="snake-meta">all-time board · steps counted to the last apple</p>
+      <div id="snake-table"></div>
     </div>
 
     <!-- FLOWCODE -->
@@ -307,6 +319,43 @@
       }).catch(function () { el.innerHTML = offlineHtml; });
     }
 
+    /* ── snake (global) ──
+       Three boards, not two: classic runs land on an all-time board and a dated
+       one, while daily seed runs go straight to a board named for the day the
+       worker played them, because that seed is only good for that day. */
+    var snScope = "all";
+    function renderSnake() {
+      var el = document.getElementById("snake-table");
+      var board = snScope === "daily" ? "daily" + dailySuffix()
+                : snScope === "today" ? "classic" + dailySuffix()
+                : "classic";
+      document.getElementById("snake-meta").textContent =
+        snScope === "daily"
+          ? "daily seed · " + utcDayKey(0) + " · same apples for everyone, resets at midnight UTC"
+          : snScope === "today"
+            ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
+            : "all-time board · steps counted to the last apple";
+      el.innerHTML = loadingHtml;
+      Arcade.top("snake", board).then(function (data) {
+        el.innerHTML = table(
+          ["Player", "Apples", "Steps", "Length", "When"],
+          data.entries.map(function (s) {
+            return [
+              { html: nameCell(s.name) },
+              { html: String(s.apples), num: true },
+              { html: String(s.steps), num: true },
+              { html: String(s.length), num: true },
+              { html: Arcade.fmtDate(s.at), num: true }
+            ];
+          }),
+          snScope === "daily"
+            ? "Nobody has run today's seed yet."
+            : snScope === "today" ? "No snake runs today yet." : "No verified snake runs yet.",
+          'most apples wins, ties go to the shorter route → <a href="/snake/" style="text-decoration:underline;">play</a>'
+        );
+      }).catch(function () { el.innerHTML = offlineHtml; });
+    }
+
     /* ── flowcode (global) ──
        flowcode verifies its runs in its own worker, because the replay needs
        that game's word engine, but the rows land in this database like every
@@ -343,7 +392,7 @@
     }
 
     /* tabs */
-    var tabs = ["wordle", "minesweeper", "2048", "flowcode"];
+    var tabs = ["wordle", "minesweeper", "2048", "snake", "flowcode"];
     tabs.forEach(function (name) {
       document.getElementById("tab-" + name).addEventListener("click", function () {
         tabs.forEach(function (other) {
@@ -414,10 +463,20 @@
         render2048();
       });
     });
+    document.querySelectorAll("[data-snscope]").forEach(function (p) {
+      p.addEventListener("click", function () {
+        snScope = p.dataset.snscope;
+        document.querySelectorAll("[data-snscope]").forEach(function (q) {
+          q.setAttribute("aria-pressed", String(q === p));
+        });
+        renderSnake();
+      });
+    });
 
     renderWordle();
     renderMines();
     render2048();
+    renderSnake();
     renderFlowcode();
   })();
 </script>
