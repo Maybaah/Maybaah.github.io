@@ -19,7 +19,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 
 Every game is its own repository deployed as a project page under the same
 domain; this repo owns the shared design system, the arcade client and the
-leaderboard backend.
+leaderboard backend. Adding a cabinet: [`NEW-GAME.md`](NEW-GAME.md).
 
 ## How the leaderboards work
 
