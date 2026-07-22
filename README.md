@@ -16,6 +16,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/minesweeper/` | Minesweeper: 3 difficulties, chording | [Maybaah/minesweeper](https://github.com/Maybaah/minesweeper) |
 | `/2048/` | 2048: slide and merge to 2048 | [Maybaah/2048](https://github.com/Maybaah/2048) |
 | `/snake/` | Snake: classic + daily seed challenge | [Maybaah/snake](https://github.com/Maybaah/snake) |
+| `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
 | `/flowcode/` | 3D typing trainer | [Maybaah/flowcode](https://github.com/Maybaah/flowcode) |
 
 Every game is its own repository deployed as a project page under the same
@@ -34,8 +35,11 @@ Every game stores its rows in the one `arcade` database, in the same `scores`
 table keyed `(game, board, player)`. flowcode is the exception in one respect
 only: its runs are replayed by its own Worker, because that verification needs
 the game's word engine. The rows still land here, so `/leaderboard/` reads every
-board through a single API and a player keeps one identity across all five
-games.
+board through a single API and a player keeps one identity across every game.
+
+Tic tac toe leaves this model entirely. Two people playing at once produce no
+single tape and no scalar to rank, so `tictactoe-match` referees the match while
+it happens, from a Durable Object per room, and stores nothing at all.
 
 A finished run counts on two boards: one that keeps a player's best ever, and
 one for the day it was played, dated by the Worker's own clock so nobody can
@@ -51,6 +55,16 @@ plays the same board.
 | 2048 | `classic` | `classic-<YYYYMMDD>` |
 | Snake | `classic` | `classic-<YYYYMMDD>`, plus `daily-<YYYYMMDD>` for seeded runs |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
+| Tic tac toe | none | none |
+
+Every board above is rendered from one description in
+[`assets/arcade.js`](assets/arcade.js), which both `/leaderboard/` and the widget
+each game page mounts under itself read. Adding a board in one place and not the
+other is how the same board ends up showing two different days.
+
+Tic tac toe is the exception with no board at all: it is a solved game, so two
+players who know what they are doing draw every time and there is nothing worth
+ranking. Its Worker is a referee rather than an auditor, and holds no database.
 
 Games load [`assets/arcade.js`](assets/arcade.js) from this repo: it holds the
 local run history (localStorage), the shared player identity and the API client

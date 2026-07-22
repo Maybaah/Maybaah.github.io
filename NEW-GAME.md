@@ -61,6 +61,25 @@ character of drift and every run fails to verify.
 run show the name input, a "Submit run" button and a status line, exactly like
 2048's `showSubmitUI()` / `submitRun()`.
 
+## The exception: games with two players
+
+Everything above assumes a run one person plays alone, which is the only kind a
+Worker can audit after the fact. Two people playing at once break it: there is
+no single tape, and no reason to believe either copy of it.
+
+Such a game swaps the auditor for a **referee**. A Durable Object holds the
+board and is the only thing allowed to change it; clients send intents and draw
+whatever they are sent back. A tampered page can ask to move twice, move out of
+turn or fill an occupied square, and simply be told no. The rule that replaces
+"never trust the client" is **the server owns the state**, and the client is not
+asked to agree.
+
+[Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) is the reference. It
+also shows what falls away with the replay model: no seed, no PRNG parity, no
+`GAMES` entry, no D1 binding, and no board, because a solved game has nothing
+worth ranking. Reach for this only when a run genuinely cannot be replayed from
+one client's tape. Everything else stays on the model above.
+
 ## Storage
 
 One D1 database, `arcade`, one table, `scores`, keyed `(game, board, player)`.

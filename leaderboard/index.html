@@ -60,18 +60,11 @@
 
   <style>
     .sub-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
-    .pill {
-      font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-      color: var(--text-secondary); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px;
-      transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
-    }
-    .pill:hover { color: var(--text-primary); }
-    .pill[aria-pressed="true"] { color: #0a0a0a; background: var(--accent); border-color: var(--accent); }
+    /* .sub-pills, .pill, .board-meta and .you now live in /assets/site.css,
+       because the game pages mount the same widget. */
     .board-panel { margin-top: 24px; }
-    .board-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
     .tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 32px; }
     .tools .note { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
-    .you { color: var(--success); font-family: var(--font-mono); font-size: 10px; margin-left: 8px; letter-spacing: 0.1em; }
   </style>
 </head>
 
@@ -102,72 +95,16 @@
       <button class="tab" role="tab" id="tab-flowcode" aria-selected="false">flowcode</button>
     </div>
 
-    <!-- WORDLE -->
-    <div class="board-panel" id="panel-wordle" role="tabpanel">
-      <div class="sub-pills" role="group" aria-label="Day">
-        <button class="pill" data-day="today" aria-pressed="true">Today</button>
-        <button class="pill" data-day="yesterday" aria-pressed="false">Yesterday</button>
-      </div>
-      <p class="board-meta" id="wordle-meta">daily board · resets at midnight UTC</p>
-      <div id="wordle-table"></div>
-    </div>
+    <!-- Pills, meta and table are all built by Arcade.mountBoard from the one
+         board description in /assets/arcade.js, which the game pages mount too. -->
+    <div class="board-panel" id="panel-wordle" role="tabpanel"></div>
+    <div class="board-panel" id="panel-minesweeper" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-2048" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-snake" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden></div>
 
-    <!-- MINESWEEPER -->
-    <div class="board-panel" id="panel-minesweeper" role="tabpanel" hidden>
-      <div class="sub-pills" role="group" aria-label="Difficulty">
-        <button class="pill" data-diff="beginner" aria-pressed="true">Beginner</button>
-        <button class="pill" data-diff="intermediate" aria-pressed="false">Intermediate</button>
-        <button class="pill" data-diff="expert" aria-pressed="false">Expert</button>
-      </div>
-      <div class="sub-pills" role="group" aria-label="Range">
-        <button class="pill" data-msscope="all" aria-pressed="true">All-time</button>
-        <button class="pill" data-msscope="today" aria-pressed="false">Today</button>
-      </div>
-      <p class="board-meta" id="mines-meta">all-time board · one row per player, your best clear counts</p>
-      <div id="mines-table"></div>
-    </div>
-
-    <!-- 2048 -->
-    <div class="board-panel" id="panel-2048" role="tabpanel" hidden>
-      <div class="sub-pills" role="group" aria-label="Range">
-        <button class="pill" data-g2scope="all" aria-pressed="true">All-time</button>
-        <button class="pill" data-g2scope="today" aria-pressed="false">Today</button>
-      </div>
-      <p class="board-meta" id="g2048-meta">all-time board · finished runs only, replayed move by move</p>
-      <div id="g2048-table"></div>
-    </div>
-
-    <!-- SNAKE -->
-    <div class="board-panel" id="panel-snake" role="tabpanel" hidden>
-      <div class="sub-pills" role="group" aria-label="Range">
-        <button class="pill" data-snscope="all" aria-pressed="true">All-time</button>
-        <button class="pill" data-snscope="today" aria-pressed="false">Today</button>
-        <button class="pill" data-snscope="daily" aria-pressed="false">Daily seed</button>
-      </div>
-      <p class="board-meta" id="snake-meta">all-time board · steps counted to the last apple</p>
-      <div id="snake-table"></div>
-    </div>
-
-    <!-- FLOWCODE -->
-    <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden>
-      <div class="sub-pills" role="group" aria-label="Mode">
-        <button class="pill" data-mode="daily" aria-pressed="true">Daily</button>
-        <button class="pill" data-mode="time" aria-pressed="false">Time</button>
-        <button class="pill" data-mode="words" aria-pressed="false">Words</button>
-        <button class="pill" data-mode="endless" aria-pressed="false">Survival</button>
-        <button class="pill" data-mode="sudden" aria-pressed="false">Flawless</button>
-        <button class="pill" data-mode="ramp" aria-pressed="false">Rush</button>
-      </div>
-      <div class="sub-pills" role="group" aria-label="Range">
-        <button class="pill" data-fcday="today" aria-pressed="true">Today</button>
-        <button class="pill" data-fcday="yesterday" aria-pressed="false">Yesterday</button>
-        <button class="pill" data-fcday="all" aria-pressed="false">All-time</button>
-      </div>
-      <p class="board-meta" id="flowcode-meta">ranked runs · seeded, no power-ups, no modifiers · resets at midnight UTC</p>
-      <div id="flowcode-table"></div>
-      <div style="margin-top: 20px;">
-        <a class="btn btn-secondary btn-sm" href="/flowcode/">Open flowcode</a>
-      </div>
+    <div style="margin-top: 20px;">
+      <a class="btn btn-secondary btn-sm" href="/flowcode/" id="open-flowcode" hidden>Open flowcode</a>
     </div>
 
     <div class="tools">
@@ -192,292 +129,25 @@
   (function () {
     "use strict";
 
-    var esc = function (s) {
-      return String(s).replace(/[&<>"']/g, function (ch) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-      });
-    };
-
-    var EPOCH = Date.UTC(2026, 0, 1);
-    function dayNumber(offset) {
-      var n = new Date();
-      return Math.floor((Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()) - EPOCH) / 864e5) + 1 - (offset || 0);
-    }
-
-    var ME = Arcade.getPlayer();
-
-    function table(headers, rows, emptyText, emptyHint) {
-      if (!rows.length) {
-        return '<div class="empty"><p>' + emptyText + '</p><p class="mono" style="margin-top:8px;">' + emptyHint + "</p></div>";
-      }
-      var h = headers.map(function (x) { return "<th>" + x + "</th>"; }).join("");
-      var b = rows.map(function (cells, i) {
-        var tds = cells.map(function (c) { return "<td" + (c.num ? ' class="num"' : "") + ">" + c.html + "</td>"; }).join("");
-        return '<tr' + (i === 0 ? ' class="top"' : "") + '><td class="rank">' + (i + 1) + "</td>" + tds + "</tr>";
-      }).join("");
-      return '<div style="overflow-x:auto;"><table class="board-table"><thead><tr><th>#</th>' + h +
-             "</tr></thead><tbody>" + b + "</tbody></table></div>";
-    }
-
-    var loadingHtml = '<div class="empty"><p class="mono">loading board…</p></div>';
-    var offlineHtml = '<div class="empty"><p>The board is unreachable right now.</p>' +
-      '<p class="mono" style="margin-top:8px;">check your connection and reload</p></div>';
-
-    function nameCell(name) {
-      return esc(name) + (name === ME ? '<span class="you">you?</span>' : "");
-    }
-
-    /* ── wordle (global) ── */
-    var wordleDay = "today";
-    function renderWordle() {
-      var el = document.getElementById("wordle-table");
-      var day = dayNumber(wordleDay === "yesterday" ? 1 : 0);
-      document.getElementById("wordle-meta").textContent =
-        "daily #" + day + " · resets at midnight UTC";
-      el.innerHTML = loadingHtml;
-      Arcade.top("wordle", "daily-" + day).then(function (data) {
-        el.innerHTML = table(
-          ["Player", "Guesses", "Time", "When"],
-          data.entries.map(function (s) {
-            return [
-              { html: nameCell(s.name) },
-              { html: s.guesses + "/6", num: true },
-              { html: Arcade.fmtTime(s.timeMs), num: true },
-              { html: Arcade.fmtDate(s.at), num: true }
-            ];
-          }),
-          "Nobody has solved daily #" + day + " yet.",
-          'first solve claims the crown → <a href="/wordle/" style="text-decoration:underline;">play</a>'
-        );
-      }).catch(function () { el.innerHTML = offlineHtml; });
-    }
-
-    /* Every game except wordle keeps two boards: one for a player's best ever
-       and one per day, which the worker names from its own clock. Wordle is
-       already one puzzle a day, so it has no second board. */
-    function utcDayKey(offset) {
-      var d = new Date();
-      d.setUTCDate(d.getUTCDate() - (offset || 0));
-      return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
-    }
-    var dailySuffix = function () { return "-" + utcDayKey(0); };
-
-    /* ── minesweeper (global) ── */
-    var curDiff = "beginner";
-    var msScope = "all";
-    function renderMines() {
-      var el = document.getElementById("mines-table");
-      var daily = msScope === "today";
-      var board = curDiff + (daily ? dailySuffix() : "");
-      document.getElementById("mines-meta").textContent = daily
-        ? "today's clears · " + utcDayKey(0) + " · resets at midnight UTC"
-        : "all-time board · one row per player, your best clear counts";
-      el.innerHTML = loadingHtml;
-      Arcade.top("minesweeper", board).then(function (data) {
-        el.innerHTML = table(
-          ["Player", "Time", "When"],
-          data.entries.map(function (s) {
-            return [
-              { html: nameCell(s.name) },
-              { html: Arcade.fmtTime(s.timeMs), num: true },
-              { html: Arcade.fmtDate(s.at), num: true }
-            ];
-          }),
-          daily
-            ? "No " + curDiff + " clears today yet."
-            : "No verified " + curDiff + " clears yet.",
-          'the field is untouched → <a href="/minesweeper/" style="text-decoration:underline;">play</a>'
-        );
-      }).catch(function () { el.innerHTML = offlineHtml; });
-    }
-
-    /* ── 2048 (global) ── */
-    var g2Scope = "all";
-    function render2048() {
-      var el = document.getElementById("g2048-table");
-      var daily = g2Scope === "today";
-      var board = "classic" + (daily ? dailySuffix() : "");
-      document.getElementById("g2048-meta").textContent = daily
-        ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
-        : "all-time board · finished runs only, replayed move by move";
-      el.innerHTML = loadingHtml;
-      Arcade.top("2048", board).then(function (data) {
-        el.innerHTML = table(
-          ["Player", "Score", "Top tile", "Moves", "When"],
-          data.entries.map(function (s) {
-            return [
-              { html: nameCell(s.name) },
-              { html: String(s.points), num: true },
-              { html: String(s.maxTile), num: true },
-              { html: String(s.moves), num: true },
-              { html: Arcade.fmtDate(s.at), num: true }
-            ];
-          }),
-          daily ? "No finished 2048 runs today yet." : "No finished 2048 runs yet.",
-          'play until the board jams → <a href="/2048/" style="text-decoration:underline;">play</a>'
-        );
-      }).catch(function () { el.innerHTML = offlineHtml; });
-    }
-
-    /* ── snake (global) ──
-       Three boards, not two: classic runs land on an all-time board and a dated
-       one, while daily seed runs go straight to a board named for the day the
-       worker played them, because that seed is only good for that day. */
-    var snScope = "all";
-    function renderSnake() {
-      var el = document.getElementById("snake-table");
-      var board = snScope === "daily" ? "daily" + dailySuffix()
-                : snScope === "today" ? "classic" + dailySuffix()
-                : "classic";
-      document.getElementById("snake-meta").textContent =
-        snScope === "daily"
-          ? "daily seed · " + utcDayKey(0) + " · same apples for everyone, resets at midnight UTC"
-          : snScope === "today"
-            ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
-            : "all-time board · steps counted to the last apple";
-      el.innerHTML = loadingHtml;
-      Arcade.top("snake", board).then(function (data) {
-        el.innerHTML = table(
-          ["Player", "Apples", "Steps", "Length", "When"],
-          data.entries.map(function (s) {
-            return [
-              { html: nameCell(s.name) },
-              { html: String(s.apples), num: true },
-              { html: String(s.steps), num: true },
-              { html: String(s.length), num: true },
-              { html: Arcade.fmtDate(s.at), num: true }
-            ];
-          }),
-          snScope === "daily"
-            ? "Nobody has run today's seed yet."
-            : snScope === "today" ? "No snake runs today yet." : "No verified snake runs yet.",
-          'most apples wins, ties go to the shorter route → <a href="/snake/" style="text-decoration:underline;">play</a>'
-        );
-      }).catch(function () { el.innerHTML = offlineHtml; });
-    }
-
-    /* ── flowcode (global) ──
-       flowcode verifies its runs in its own worker, because the replay needs
-       that game's word engine, but the rows land in this database like every
-       other board, so they read back through the same client. */
-    var fcMode = "daily";
-    var fcDay = "today";
-    function renderFlowcode() {
-      var el = document.getElementById("flowcode-table");
-      var allTime = fcDay === "all";
-      var day = utcDayKey(fcDay === "yesterday" ? 1 : 0);
-      document.getElementById("flowcode-meta").textContent = allTime
-        ? fcMode + " board · all-time · one row per player, best ranked run counts"
-        : fcMode + " board · " + day + " · seeded runs, no power-ups · resets at midnight UTC";
-      el.innerHTML = loadingHtml;
-      Arcade.top("flowcode", fcMode + "-" + (allTime ? "all" : day)).then(function (data) {
-        el.innerHTML = table(
-          ["Player", "Score", "WPM", "Acc", "Combo", "When"],
-          data.entries.map(function (s) {
-            return [
-              { html: nameCell(s.name) },
-              { html: String(s.points), num: true },
-              { html: String(s.wpm), num: true },
-              { html: s.acc + "%", num: true },
-              { html: "×" + s.maxCombo, num: true },
-              { html: Arcade.fmtDate(s.at), num: true }
-            ];
-          }),
-          allTime
-            ? "No ranked " + fcMode + " runs yet."
-            : "No ranked " + fcMode + " runs for " + day + " yet.",
-          'the board is warming up → <a href="/flowcode/" style="text-decoration:underline;">play ranked</a>'
-        );
-      }).catch(function () { el.innerHTML = offlineHtml; });
-    }
-
-    /* tabs */
+    /* Each panel is a board mounted from the shared description in
+       /assets/arcade.js. The page owns the tabs; the widget owns everything
+       inside a panel, including its own pills. */
     var tabs = ["wordle", "minesweeper", "2048", "snake", "flowcode"];
+    var openFlowcode = document.getElementById("open-flowcode");
+
+    tabs.forEach(function (name) {
+      Arcade.mountBoard(document.getElementById("panel-" + name), { game: name });
+    });
+
     tabs.forEach(function (name) {
       document.getElementById("tab-" + name).addEventListener("click", function () {
         tabs.forEach(function (other) {
           document.getElementById("tab-" + other).setAttribute("aria-selected", String(other === name));
           document.getElementById("panel-" + other).hidden = other !== name;
         });
+        openFlowcode.hidden = name !== "flowcode";
       });
     });
-
-    /* day pills */
-    document.querySelectorAll('[data-day]').forEach(function (p) {
-      p.addEventListener("click", function () {
-        wordleDay = p.dataset.day;
-        document.querySelectorAll("[data-day]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        renderWordle();
-      });
-    });
-
-    /* difficulty pills */
-    document.querySelectorAll("[data-diff]").forEach(function (p) {
-      p.addEventListener("click", function () {
-        curDiff = p.dataset.diff;
-        document.querySelectorAll("[data-diff]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        renderMines();
-      });
-    });
-
-    /* flowcode pills */
-    document.querySelectorAll("[data-mode]").forEach(function (p) {
-      p.addEventListener("click", function () {
-        fcMode = p.dataset.mode;
-        document.querySelectorAll("[data-mode]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        renderFlowcode();
-      });
-    });
-    document.querySelectorAll("[data-fcday]").forEach(function (p) {
-      p.addEventListener("click", function () {
-        fcDay = p.dataset.fcday;
-        document.querySelectorAll("[data-fcday]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        renderFlowcode();
-      });
-    });
-
-    /* all-time vs today */
-    document.querySelectorAll("[data-msscope]").forEach(function (p) {
-      p.addEventListener("click", function () {
-        msScope = p.dataset.msscope;
-        document.querySelectorAll("[data-msscope]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        renderMines();
-      });
-    });
-    document.querySelectorAll("[data-g2scope]").forEach(function (p) {
-      p.addEventListener("click", function () {
-        g2Scope = p.dataset.g2scope;
-        document.querySelectorAll("[data-g2scope]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        render2048();
-      });
-    });
-    document.querySelectorAll("[data-snscope]").forEach(function (p) {
-      p.addEventListener("click", function () {
-        snScope = p.dataset.snscope;
-        document.querySelectorAll("[data-snscope]").forEach(function (q) {
-          q.setAttribute("aria-pressed", String(q === p));
-        });
-        renderSnake();
-      });
-    });
-
-    renderWordle();
-    renderMines();
-    render2048();
-    renderSnake();
-    renderFlowcode();
   })();
 </script>
 </body>

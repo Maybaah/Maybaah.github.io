@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper, 2048, Snake &amp; flowcode</title>
-  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper, 2048, Snake and the flowcode 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper, 2048, Snake, Tic Tac Toe &amp; flowcode</title>
+  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper, 2048, Snake, Tic Tac Toe and the flowcode 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/arcade/" />
@@ -14,7 +14,7 @@
   <!-- Open Graph -->
   <meta property="og:site_name" content="maybaah.github.io" />
   <meta property="og:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
-  <meta property="og:description" content="Wordle, Minesweeper, 2048, Snake and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <meta property="og:description" content="Wordle, Minesweeper, 2048, Snake, Tic Tac Toe and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://maybaah.github.io/arcade/" />
   <meta property="og:image" content="https://maybaah.github.io/assets/og.png" />
@@ -24,7 +24,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
-  <meta name="twitter:description" content="Wordle, Minesweeper, 2048, Snake and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <meta name="twitter:description" content="Wordle, Minesweeper, 2048, Snake, Tic Tac Toe and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta name="twitter:image" content="https://maybaah.github.io/assets/og.png" />
 
   <!-- Icons -->
@@ -44,7 +44,7 @@
     "@type": "CollectionPage",
     "name": "Maybaah's Arcade: Browser Mini-Games",
     "url": "https://maybaah.github.io/arcade/",
-    "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper, 2048, Snake and the flowcode 3D typing trainer.",
+    "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper, 2048, Snake, Tic Tac Toe and the flowcode 3D typing trainer.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
     "mainEntity": {
       "@type": "ItemList",
@@ -107,6 +107,19 @@
           "gamePlatform": "Web browser",
           "operatingSystem": "Any",
           "applicationCategory": "Game",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 6,
+          "name": "Tic Tac Toe",
+          "url": "https://maybaah.github.io/tictactoe/",
+          "description": "Three in a row. Share a room link to play a friend in real time, or play a bot with three difficulties.",
+          "genre": "Strategy game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "playMode": ["SinglePlayer", "MultiPlayer"],
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
         }
       ]
@@ -232,9 +245,26 @@
         </div>
       </article>
 
-      <article class="game-card soon fade-up" style="--d:7;" aria-label="Coming soon">
+      <article class="game-card fade-up" style="--d:7;">
         <header>
-          <h3>Cabinet 06</h3>
+          <h3>Tic Tac Toe</h3>
+          <span class="badge"><span class="dot"></span>Online</span>
+        </header>
+        <p class="desc">Three in a row. Share a link to play a friend in real
+          time, or take on a bot that never loses.</p>
+        <div class="game-stats">
+          <span>modes · <b>1v1 and bot</b></span>
+          <span>board · <b>refereed</b></span>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/tictactoe/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/tictactoe">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card soon fade-up" style="--d:8;" aria-label="Coming soon">
+        <header>
+          <h3>Cabinet 07</h3>
           <span class="badge"><span class="dot off"></span>Soon</span>
         </header>
         <p class="desc">Under construction. Tetris? Solitaire? Breakout? Vote by
