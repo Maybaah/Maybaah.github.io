@@ -19,6 +19,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/snake/` | Snake: classic + daily seed challenge | [Maybaah/snake](https://github.com/Maybaah/snake) |
 | `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
 | `/chess/` | Chess: 1v1 rooms + pass and play | [Maybaah/chess](https://github.com/Maybaah/chess) |
+| `/codenames/` | Codenames: team lobbies, English and Russian decks | [Maybaah/codenames](https://github.com/Maybaah/codenames) |
 | `/flowcode/` | 3D typing trainer | [Maybaah/flowcode](https://github.com/Maybaah/flowcode) |
 
 Every game is its own repository deployed as a project page under the same
@@ -39,11 +40,14 @@ only: its runs are replayed by its own Worker, because that verification needs
 the game's word engine. The rows still land here, so `/leaderboard/` reads every
 board through a single API and a player keeps one identity across every game.
 
-Tic tac toe and chess leave this model entirely. Two people playing at once
-produce no single tape, so `tictactoe-match` and `chess-match` referee the match
-while it happens, from a Durable Object per room. Tic tac toe stores nothing at
-all. Chess keeps no position either, but does write an Elo rating for each
-finished 1v1 game, computed by the referee from the result it watched happen.
+Tic tac toe, chess and codenames leave this model entirely. Several people
+playing at once produce no single tape, so `tictactoe-match`, `chess-match` and
+`codenames-room` referee the game while it happens, from a Durable Object per
+room. Tic tac toe stores nothing at all. Chess keeps no position either, but
+does write an Elo rating for each finished 1v1 game, computed by the referee
+from the result it watched happen. Codenames has a second reason to be
+refereed: half the table is not allowed to see the board, so the key is held by
+the room and sent down only to the two spymasters.
 
 A finished run counts on two boards: one that keeps a player's best ever, and
 one for the day it was played, dated by the Worker's own clock so nobody can
@@ -62,15 +66,17 @@ plays the same board.
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
 | Chess | `elo` | none |
+| Codenames | none | none |
 
 Every board above is rendered from one description in
 [`assets/arcade.js`](assets/arcade.js), which both `/leaderboard/` and the widget
 each game page mounts under itself read. Adding a board in one place and not the
 other is how the same board ends up showing two different days.
 
-Tic tac toe is the exception with no board at all: it is a solved game, so two
-players who know what they are doing draw every time and there is nothing worth
-ranking. Chess has a board, but not a run-shaped one. It ranks an Elo rating
+Tic tac toe and codenames have no board at all. Tic tac toe is a solved game, so
+two players who know what they are doing draw every time and there is nothing
+worth ranking; codenames is a party game scored by a table of friends, and a
+ladder would only measure who brought the best teammates. Chess has a board, but not a run-shaped one. It ranks an Elo rating
 instead of a best run, which is why it is the one board with no daily twin, and
 why the rating can fall as well as rise. Because two cooperating browsers are
 exactly what a ladder has to survive, `chess-match` only rates games with two
