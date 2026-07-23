@@ -536,7 +536,10 @@ const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper, "2048": ve
 /* flowcode stores its rows in this database too, but it verifies them in its
    own Worker, which is where its word engine lives. Its boards are readable
    here so one page can render every game; submissions still go to that Worker. */
-const READ_ONLY_GAMES = ["flowcode"];
+/* Boards written by another Worker and only read from here. flowcode replays
+   its own runs because that needs its word engine; chess is rated by the
+   referee that watched the game, because a 1v1 match leaves no tape to replay. */
+const READ_ONLY_GAMES = ["flowcode", "chess"];
 
 const BOARD_RE = /^[a-z0-9-]{1,32}$/;
 

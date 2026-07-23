@@ -92,6 +92,7 @@
       <button class="tab" role="tab" id="tab-minesweeper" aria-selected="false">Minesweeper</button>
       <button class="tab" role="tab" id="tab-2048" aria-selected="false">2048</button>
       <button class="tab" role="tab" id="tab-snake" aria-selected="false">Snake</button>
+      <button class="tab" role="tab" id="tab-chess" aria-selected="false">Chess</button>
       <button class="tab" role="tab" id="tab-flowcode" aria-selected="false">flowcode</button>
     </div>
 
@@ -101,6 +102,7 @@
     <div class="board-panel" id="panel-minesweeper" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-2048" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-snake" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-chess" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden></div>
 
     <div style="margin-top: 20px;">
@@ -132,7 +134,7 @@
     /* Each panel is a board mounted from the shared description in
        /assets/arcade.js. The page owns the tabs; the widget owns everything
        inside a panel, including its own pills. */
-    var tabs = ["wordle", "minesweeper", "2048", "snake", "flowcode"];
+    var tabs = ["wordle", "minesweeper", "2048", "snake", "chess", "flowcode"];
     var openFlowcode = document.getElementById("open-flowcode");
 
     tabs.forEach(function (name) {

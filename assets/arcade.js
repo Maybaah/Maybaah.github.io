@@ -273,6 +273,34 @@
       },
     },
 
+    /* Chess is the one board that is not a run at all. There is no tape to
+       replay, so chess-match rates the match it refereed and writes the Elo
+       straight into the same table. A rating is a running number rather than a
+       personal best, which is why it has no daily twin: there is only ever one
+       current standing per player. */
+    chess: {
+      label: "Chess",
+      path: "/chess/",
+      columns: ["Player", "Elo", "Games", "W/D/L", "Peak", "When"],
+      row: (s) => [
+        { html: nameCell(s.name) },
+        num(s.elo),
+        num(s.games),
+        { html: s.wins + "/" + s.draws + "/" + s.losses, num: true },
+        num(s.peak),
+        when(s.at),
+      ],
+      axes: [],
+      hint: "the ladder is empty",
+      resolve() {
+        return {
+          board: "elo",
+          meta: "rated 1v1 rooms · everyone starts at 1200 · rated by the referee, not the client",
+          empty: "Nobody has finished a rated game yet.",
+        };
+      },
+    },
+
     /* flowcode verifies its runs in its own Worker, because that replay needs
        the game's word engine, but the rows land in this database like every
        other board, so they read back through the same client. */

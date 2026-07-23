@@ -39,9 +39,10 @@ the game's word engine. The rows still land here, so `/leaderboard/` reads every
 board through a single API and a player keeps one identity across every game.
 
 Tic tac toe and chess leave this model entirely. Two people playing at once
-produce no single tape and no scalar to rank, so `tictactoe-match` and
-`chess-match` referee the match while it happens, from a Durable Object per
-room, and store nothing at all.
+produce no single tape, so `tictactoe-match` and `chess-match` referee the match
+while it happens, from a Durable Object per room. Tic tac toe stores nothing at
+all. Chess keeps no position either, but does write an Elo rating for each
+finished 1v1 game, computed by the referee from the result it watched happen.
 
 A finished run counts on two boards: one that keeps a player's best ever, and
 one for the day it was played, dated by the Worker's own clock so nobody can
@@ -58,19 +59,21 @@ plays the same board.
 | Snake | `classic` | `classic-<YYYYMMDD>`, plus `daily-<YYYYMMDD>` for seeded runs |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
-| Chess | none | none |
+| Chess | `elo` | none |
 
 Every board above is rendered from one description in
 [`assets/arcade.js`](assets/arcade.js), which both `/leaderboard/` and the widget
 each game page mounts under itself read. Adding a board in one place and not the
 other is how the same board ends up showing two different days.
 
-Tic tac toe and chess are the exceptions with no board at all. Tic tac toe is a
-solved game, so two players who know what they are doing draw every time and
-there is nothing worth ranking. Chess is not solved, but a match still needs two
-people, and any scalar two cooperating browsers can agree on in private is one
-they can farm. Both Workers are referees rather than auditors, and hold no
-database.
+Tic tac toe is the exception with no board at all: it is a solved game, so two
+players who know what they are doing draw every time and there is nothing worth
+ranking. Chess has a board, but not a run-shaped one. It ranks an Elo rating
+instead of a best run, which is why it is the one board with no daily twin, and
+why the rating can fall as well as rise. Because two cooperating browsers are
+exactly what a ladder has to survive, `chess-match` only rates games with two
+distinct players, refuses to rate a resignation inside ten plies, and holds the
+rating flat after the same pair have traded three games in a day.
 
 Games load [`assets/arcade.js`](assets/arcade.js) from this repo: it holds the
 local run history (localStorage), the shared player identity and the API client
