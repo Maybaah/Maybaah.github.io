@@ -14,6 +14,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/leaderboard/` | Global boards for every arcade game | this one |
 | `/wordle/` | Wordle: daily puzzle + practice | [Maybaah/wordle](https://github.com/Maybaah/wordle) |
 | `/minesweeper/` | Minesweeper: 3 difficulties, chording | [Maybaah/minesweeper](https://github.com/Maybaah/minesweeper) |
+| `/sudoku/` | Sudoku: 3 difficulties, pencil marks | [Maybaah/sudoku](https://github.com/Maybaah/sudoku) |
 | `/2048/` | 2048: slide and merge to 2048 | [Maybaah/2048](https://github.com/Maybaah/2048) |
 | `/snake/` | Snake: classic + daily seed challenge | [Maybaah/snake](https://github.com/Maybaah/snake) |
 | `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
@@ -28,9 +29,9 @@ leaderboard backend. Adding a cabinet: [`NEW-GAME.md`](NEW-GAME.md).
 
 Same architecture as flowcode: a Cloudflare Worker + D1 ([`worker/`](worker/))
 that never trusts a submitted score. A Wordle run is checked against the day's
-real answer; Minesweeper, 2048 and Snake runs ship a seed and a move log, and
-the Worker rebuilds the board and replays the whole game before anything lands
-on a board. One row per player per board: your best run counts.
+real answer; Minesweeper, Sudoku, 2048 and Snake runs ship a seed and a move
+log, and the Worker rebuilds the board and replays the whole game before
+anything lands on a board. One row per player per board: your best run counts.
 
 Every game stores its rows in the one `arcade` database, in the same `scores`
 table keyed `(game, board, player)`. flowcode is the exception in one respect
@@ -55,6 +56,7 @@ plays the same board.
 | :-- | :-- | :-- |
 | Wordle | — | `daily-<n>` |
 | Minesweeper | `beginner` / `intermediate` / `expert` | `<difficulty>-<YYYYMMDD>` |
+| Sudoku | `easy` / `medium` / `hard` | `<difficulty>-<YYYYMMDD>` |
 | 2048 | `classic` | `classic-<YYYYMMDD>` |
 | Snake | `classic` | `classic-<YYYYMMDD>`, plus `daily-<YYYYMMDD>` for seeded runs |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |

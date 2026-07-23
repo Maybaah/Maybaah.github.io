@@ -69,6 +69,14 @@
     return wins[0] || null;
   }
 
+  function bestSudoku(difficulty) {
+    const wins = getScores("sudoku").filter(
+      (s) => s.result === "win" && s.difficulty === difficulty
+    );
+    wins.sort((a, b) => a.timeMs - b.timeMs);
+    return wins[0] || null;
+  }
+
   function fmtTime(ms) {
     if (ms == null) return "none";
     const total = Math.round(ms / 100) / 10;
@@ -224,6 +232,31 @@
             ? "today's clears · " + utcDayKey(0) + " · resets at midnight UTC"
             : "all-time board · one row per player, your best clear counts",
           empty: daily ? "No " + st.difficulty + " clears today yet." : "No verified " + st.difficulty + " clears yet.",
+        };
+      },
+    },
+
+    sudoku: {
+      label: "Sudoku",
+      path: "/sudoku/",
+      columns: ["Player", "Time", "Slips", "When"],
+      row: (s) => [{ html: nameCell(s.name) }, { html: fmtTime(s.timeMs), num: true }, num(s.slips), when(s.at)],
+      axes: [
+        { id: "difficulty", label: "Difficulty", options: [
+          { id: "easy", label: "Easy" }, { id: "medium", label: "Medium" }, { id: "hard", label: "Hard" }] },
+        { id: "range", label: "Range", options: RANGE },
+      ],
+      hint: "the grid is untouched",
+      /* slips are wrong digits counted by the Worker as it replays the log, so
+         a clean solve is one the player never had to walk back */
+      resolve(st) {
+        const daily = st.range === "today";
+        return {
+          board: st.difficulty + (daily ? dailySuffix() : ""),
+          meta: daily
+            ? "today's solves · " + utcDayKey(0) + " · resets at midnight UTC"
+            : "all-time board · one row per player, your fastest solve counts",
+          empty: daily ? "No " + st.difficulty + " solves today yet." : "No verified " + st.difficulty + " solves yet.",
         };
       },
     },
@@ -421,6 +454,7 @@
     addScore,
     bestWordle,
     bestMinesweeper,
+    bestSudoku,
     fmtTime,
     fmtDate,
     playerId,

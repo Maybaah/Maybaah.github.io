@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade Leaderboards: Wordle, Minesweeper, 2048 &amp; Snake Global Best Scores | maybaah.github.io</title>
-  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, best Wordle daily runs, top 2048 scores, the Snake daily seed and flowcode's ranked typing boards. Every run is verified server-side." />
+  <title>Arcade Leaderboards: Wordle, Minesweeper, Sudoku, 2048 &amp; Snake Global Best Scores | maybaah.github.io</title>
+  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, fastest Sudoku solves, best Wordle daily runs, top 2048 scores, the Snake daily seed and flowcode's ranked typing boards. Every run is verified server-side." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/leaderboard/" />
@@ -14,7 +14,7 @@
   <!-- Open Graph -->
   <meta property="og:site_name" content="maybaah.github.io" />
   <meta property="og:title" content="Arcade Leaderboards | maybaah.github.io" />
-  <meta property="og:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper best times, 2048 scores, the Snake daily seed, flowcode ranked." />
+  <meta property="og:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper and Sudoku best times, 2048 scores, the Snake daily seed, flowcode ranked." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://maybaah.github.io/leaderboard/" />
   <meta property="og:image" content="https://maybaah.github.io/assets/og.png" />
@@ -22,7 +22,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Arcade Leaderboards | maybaah.github.io" />
-  <meta name="twitter:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper best times, 2048 scores, the Snake daily seed, flowcode ranked." />
+  <meta name="twitter:description" content="Global boards for every arcade game: Wordle dailies, Minesweeper and Sudoku best times, 2048 scores, the Snake daily seed, flowcode ranked." />
   <meta name="twitter:image" content="https://maybaah.github.io/assets/og.png" />
 
   <!-- Icons -->
@@ -42,7 +42,7 @@
     "@type": "WebPage",
     "name": "Arcade Leaderboards",
     "url": "https://maybaah.github.io/leaderboard/",
-    "description": "Global leaderboards for the mini-games on maybaah.github.io: Wordle, Minesweeper, 2048, Snake and flowcode.",
+    "description": "Global leaderboards for the mini-games on maybaah.github.io: Wordle, Minesweeper, Sudoku, 2048, Snake, Chess and flowcode.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" }
   }
   </script>
@@ -63,6 +63,9 @@
     /* .sub-pills, .pill, .board-meta and .you now live in /assets/site.css,
        because the game pages mount the same widget. */
     .board-panel { margin-top: 24px; }
+    /* a class rule that sets display would beat the user-agent [hidden] rule,
+       so the hidden state is spelled out here rather than assumed */
+    .board-panel[hidden] { display: none; }
     .tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 32px; }
     .tools .note { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
   </style>
@@ -90,6 +93,7 @@
     <div class="tabs" role="tablist" aria-label="Game">
       <button class="tab" role="tab" id="tab-wordle" aria-selected="true">Wordle</button>
       <button class="tab" role="tab" id="tab-minesweeper" aria-selected="false">Minesweeper</button>
+      <button class="tab" role="tab" id="tab-sudoku" aria-selected="false">Sudoku</button>
       <button class="tab" role="tab" id="tab-2048" aria-selected="false">2048</button>
       <button class="tab" role="tab" id="tab-snake" aria-selected="false">Snake</button>
       <button class="tab" role="tab" id="tab-chess" aria-selected="false">Chess</button>
@@ -100,16 +104,14 @@
          board description in /assets/arcade.js, which the game pages mount too. -->
     <div class="board-panel" id="panel-wordle" role="tabpanel"></div>
     <div class="board-panel" id="panel-minesweeper" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-sudoku" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-2048" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-snake" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-chess" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden></div>
 
-    <div style="margin-top: 20px;">
-      <a class="btn btn-secondary btn-sm" href="/flowcode/" id="open-flowcode" hidden>Open flowcode</a>
-    </div>
-
     <div class="tools">
+      <button class="btn btn-secondary btn-sm" id="btn-refresh">Refresh this board</button>
       <span class="note" id="tools-note">every board lives in one verified database · daily boards reset at midnight UTC</span>
     </div>
   </section>
@@ -133,23 +135,37 @@
 
     /* Each panel is a board mounted from the shared description in
        /assets/arcade.js. The page owns the tabs; the widget owns everything
-       inside a panel, including its own pills. */
-    var tabs = ["wordle", "minesweeper", "2048", "snake", "chess", "flowcode"];
-    var openFlowcode = document.getElementById("open-flowcode");
+       inside a panel, including its own pills.
 
-    tabs.forEach(function (name) {
-      Arcade.mountBoard(document.getElementById("panel-" + name), { game: name });
-    });
+       A panel is mounted the first time it is shown and re-fetched every time
+       it comes back, so only the board being looked at costs a request. Refresh
+       does the same thing on demand: it reloads the selected board with the
+       pills it is currently set to, not all six. */
+    var tabs = ["wordle", "minesweeper", "sudoku", "2048", "snake", "chess", "flowcode"];
+    var mounted = {};
+    var active = null;
 
-    tabs.forEach(function (name) {
-      document.getElementById("tab-" + name).addEventListener("click", function () {
-        tabs.forEach(function (other) {
-          document.getElementById("tab-" + other).setAttribute("aria-selected", String(other === name));
-          document.getElementById("panel-" + other).hidden = other !== name;
-        });
-        openFlowcode.hidden = name !== "flowcode";
+    function draw(name) {
+      if (mounted[name]) mounted[name].render();
+      else mounted[name] = Arcade.mountBoard(document.getElementById("panel-" + name), { game: name });
+    }
+
+    function select(name) {
+      active = name;
+      tabs.forEach(function (other) {
+        document.getElementById("tab-" + other).setAttribute("aria-selected", String(other === name));
+        document.getElementById("panel-" + other).hidden = other !== name;
       });
+      draw(name);
+    }
+
+    tabs.forEach(function (name) {
+      document.getElementById("tab-" + name).addEventListener("click", function () { select(name); });
     });
+
+    document.getElementById("btn-refresh").addEventListener("click", function () { draw(active); });
+
+    select("wordle");
   })();
 </script>
 </body>

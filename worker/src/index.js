@@ -278,6 +278,193 @@ function verifyMinesweeper(body) {
   };
 }
 
+/* ═══════════════ sudoku ═══════════════ */
+
+/* ── the generator ──────────────────────────────────────────────────────────
+   Duplicated in sudoku/game.js. The page draws whatever this builds and this
+   copy rebuilds the same puzzle from the same seed to audit the run, so drift
+   means the two disagree about which squares were the player's to fill and
+   every solve is rejected. Same rule as the PRNG above.
+   ────────────────────────────────────────────────────────────────────────── */
+
+var SUDOKU_CLUES = { easy: 42, medium: 32, hard: 26 };
+
+var SUDOKU_PEERS = (function () {
+  var peers = [];
+  for (var i = 0; i < 81; i++) {
+    var ri = (i / 9) | 0, ci = i % 9;
+    var bi = ((ri / 3) | 0) * 3 + ((ci / 3) | 0);
+    var set = [];
+    for (var j = 0; j < 81; j++) {
+      if (j === i) continue;
+      var rj = (j / 9) | 0, cj = j % 9;
+      var bj = ((rj / 3) | 0) * 3 + ((cj / 3) | 0);
+      if (ri === rj || ci === cj || bi === bj) set.push(j);
+    }
+    peers.push(set);
+  }
+  return peers;
+})();
+
+function sudokuShuffle(arr, rnd) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(rnd() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
+/* A solved grid, built from the canonical pattern and then relabelled and
+   shuffled by band, stack and row. Every one of those moves maps a valid
+   grid to another valid grid, so no search is needed to get here. */
+function sudokuSolved(rnd) {
+  var digits = sudokuShuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], rnd);
+  var bands = sudokuShuffle([0, 1, 2], rnd);
+  var stacks = sudokuShuffle([0, 1, 2], rnd);
+  var rows = [], cols = [], b, k;
+  for (b = 0; b < 3; b++) {
+    var inner = sudokuShuffle([0, 1, 2], rnd);
+    for (k = 0; k < 3; k++) rows.push(bands[b] * 3 + inner[k]);
+  }
+  for (b = 0; b < 3; b++) {
+    var innerCol = sudokuShuffle([0, 1, 2], rnd);
+    for (k = 0; k < 3; k++) cols.push(stacks[b] * 3 + innerCol[k]);
+  }
+  var flip = rnd() < 0.5;
+  var g = new Array(81);
+  for (var r = 0; r < 9; r++) {
+    for (var c = 0; c < 9; c++) {
+      var sr = rows[r], sc = cols[c];
+      g[flip ? c * 9 + r : r * 9 + c] = digits[(3 * (sr % 3) + ((sr / 3) | 0) + sc) % 9];
+    }
+  }
+  return g;
+}
+
+/* Solutions, counted no further than two: the digger only ever asks whether
+   the puzzle still pins down exactly one answer. Fewest candidates first, so
+   a forced square is taken before anything is branched on. */
+function sudokuCountSolutions(grid) {
+  var cand = new Int32Array(81).fill(0x1ff);
+  var work = grid.slice();
+  var found = 0;
+  var i, p, ps, bit;
+
+  for (i = 0; i < 81; i++) {
+    if (!grid[i]) continue;
+    bit = 1 << (grid[i] - 1);
+    ps = SUDOKU_PEERS[i];
+    for (p = 0; p < ps.length; p++) cand[ps[p]] &= ~bit;
+  }
+
+  function search() {
+    var best = -1, bestN = 10, m, n, i, d, p, ps, bit, undo, u;
+    for (i = 0; i < 81; i++) {
+      if (work[i]) continue;
+      m = cand[i]; n = 0;
+      while (m) { m &= m - 1; n++; }
+      if (n === 0) return;
+      if (n < bestN) { bestN = n; best = i; if (n === 1) break; }
+    }
+    if (best < 0) { found++; return; }
+    for (d = 0; d < 9; d++) {
+      bit = 1 << d;
+      if (!(cand[best] & bit)) continue;
+      work[best] = d + 1;
+      undo = [];
+      ps = SUDOKU_PEERS[best];
+      for (p = 0; p < ps.length; p++) {
+        if (cand[ps[p]] & bit) { cand[ps[p]] &= ~bit; undo.push(ps[p]); }
+      }
+      search();
+      for (u = 0; u < undo.length; u++) cand[undo[u]] |= bit;
+      work[best] = 0;
+      if (found > 1) return;
+    }
+  }
+
+  search();
+  return found;
+}
+
+/* Digs squares out of a solved grid in a seeded order, in pairs about the
+   center so the result is symmetric, and keeps a removal only while the
+   answer stays unique. Difficulty is how bare it is allowed to get. */
+function sudokuGenerate(seed, difficulty) {
+  var rnd = mulberry32(seed >>> 0);
+  var solution = sudokuSolved(rnd);
+  var puzzle = solution.slice();
+  var target = SUDOKU_CLUES[difficulty];
+  var clues = 81;
+  var order = [], i;
+  for (i = 0; i < 81; i++) order.push(i);
+  sudokuShuffle(order, rnd);
+  for (var k = 0; k < order.length && clues > target; k++) {
+    var a = order[k], b = 80 - a;
+    if (!puzzle[a]) continue;
+    var va = puzzle[a], vb = puzzle[b];
+    var drop = a === b || !vb ? 1 : 2;
+    puzzle[a] = 0; puzzle[b] = 0;
+    if (sudokuCountSolutions(puzzle) === 1) clues -= drop;
+    else { puzzle[a] = va; puzzle[b] = vb; }
+  }
+  return { puzzle: puzzle, solution: solution, clues: clues };
+}
+
+/* ── end of the generator ── */
+
+function verifySudoku(body) {
+  if (!SUDOKU_CLUES[body.difficulty]) return { ok: false, reason: "bad difficulty" };
+  const seed = Number(body.seed);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    return { ok: false, reason: "bad seed" };
+  }
+  const moves = body.moves;
+  if (!Array.isArray(moves) || moves.length < 1 || moves.length > 4000) {
+    return { ok: false, reason: "bad move log" };
+  }
+
+  const built = sudokuGenerate(seed, body.difficulty);
+  const puzzle = built.puzzle, solution = built.solution;
+  const grid = puzzle.slice();
+  let slips = 0;
+
+  for (const mv of moves) {
+    if (!Array.isArray(mv)) return { ok: false, reason: "bad move" };
+    const i = mv[1];
+    if (!Number.isInteger(i) || i < 0 || i >= 81) return { ok: false, reason: "bad move" };
+    // the givens are not the player's to touch, in either direction
+    if (puzzle[i]) return { ok: false, reason: "that run wrote over a given" };
+    if (mv[0] === "x" && mv.length === 2) {
+      grid[i] = 0;
+    } else if (mv[0] === "s" && mv.length === 3 && Number.isInteger(mv[2]) && mv[2] >= 1 && mv[2] <= 9) {
+      if (mv[2] !== solution[i]) slips++;
+      grid[i] = mv[2];
+    } else {
+      return { ok: false, reason: "bad move" };
+    }
+  }
+
+  // the puzzle was dug to have exactly one answer, so matching it is the
+  // whole of "solved"
+  for (let i = 0; i < 81; i++) {
+    if (grid[i] !== solution[i]) return { ok: false, reason: "that run did not solve the puzzle" };
+  }
+
+  const timeMs = Number(body.timeMs);
+  // the easiest grid still leaves 39 squares to type by hand, so anything
+  // under five seconds was not typed by a person
+  if (!Number.isInteger(timeMs) || timeMs < 5000 || timeMs >= 1e8) {
+    return { ok: false, reason: "bad time" };
+  }
+  return {
+    ok: true,
+    board: body.difficulty,
+    score: timeMs,
+    detail: { timeMs, slips, moves: moves.length },
+  };
+}
+
 /* ═══════════════ 2048 ═══════════════ */
 
 /* Line of flat indices for each row/column, ordered from the destination edge
@@ -531,7 +718,13 @@ function verifySnake(body) {
 
 /* ═══════════════ plumbing ═══════════════ */
 
-const GAMES = { wordle: verifyWordle, minesweeper: verifyMinesweeper, "2048": verify2048, snake: verifySnake };
+const GAMES = {
+  wordle: verifyWordle,
+  minesweeper: verifyMinesweeper,
+  sudoku: verifySudoku,
+  "2048": verify2048,
+  snake: verifySnake,
+};
 
 /* flowcode stores its rows in this database too, but it verifies them in its
    own Worker, which is where its word engine lives. Its boards are readable

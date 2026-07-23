@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper, 2048, Snake, Chess &amp; flowcode</title>
-  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper, 2048, Snake, Chess, Tic Tac Toe and the flowcode 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <title>Arcade: Free Browser Mini-Games | Wordle, Minesweeper, Sudoku, 2048, Snake &amp; Chess</title>
+  <meta name="description" content="Maybaah's arcade: free browser mini-games built by hand for GitHub Pages. Play Wordle, Minesweeper, Sudoku, 2048, Snake, Chess, Tic Tac Toe and the flowcode 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/arcade/" />
@@ -14,7 +14,7 @@
   <!-- Open Graph -->
   <meta property="og:site_name" content="maybaah.github.io" />
   <meta property="og:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
-  <meta property="og:description" content="Wordle, Minesweeper, 2048, Snake, Chess, Tic Tac Toe and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <meta property="og:description" content="Wordle, Minesweeper, Sudoku, 2048, Snake, Chess, Tic Tac Toe and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://maybaah.github.io/arcade/" />
   <meta property="og:image" content="https://maybaah.github.io/assets/og.png" />
@@ -24,7 +24,7 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Maybaah's Arcade: Free Browser Mini-Games" />
-  <meta name="twitter:description" content="Wordle, Minesweeper, 2048, Snake, Chess, Tic Tac Toe and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
+  <meta name="twitter:description" content="Wordle, Minesweeper, Sudoku, 2048, Snake, Chess, Tic Tac Toe and a 3D typing trainer. No ads, no sign-up, global leaderboards included." />
   <meta name="twitter:image" content="https://maybaah.github.io/assets/og.png" />
 
   <!-- Icons -->
@@ -44,7 +44,7 @@
     "@type": "CollectionPage",
     "name": "Maybaah's Arcade: Browser Mini-Games",
     "url": "https://maybaah.github.io/arcade/",
-    "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper, 2048, Snake, Chess, Tic Tac Toe and the flowcode 3D typing trainer.",
+    "description": "Free browser mini-games built for GitHub Pages: Wordle, Minesweeper, Sudoku, 2048, Snake, Chess, Tic Tac Toe and the flowcode 3D typing trainer.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" },
     "mainEntity": {
       "@type": "ItemList",
@@ -133,6 +133,18 @@
           "operatingSystem": "Any",
           "applicationCategory": "Game",
           "playMode": ["MultiPlayer", "CoOp"],
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 8,
+          "name": "Sudoku",
+          "url": "https://maybaah.github.io/sudoku/",
+          "description": "Classic 9x9 Sudoku with three difficulties, pencil marks and seeded puzzles that always have exactly one answer.",
+          "genre": "Puzzle game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
         }
       ]
@@ -292,9 +304,27 @@
         </div>
       </article>
 
-      <article class="game-card soon fade-up" style="--d:9;" aria-label="Coming soon">
+      <article class="game-card fade-up" style="--d:9;">
         <header>
-          <h3>Cabinet 08</h3>
+          <h3>Sudoku</h3>
+          <span class="badge"><span class="dot"></span>Online</span>
+        </header>
+        <p class="desc">Three difficulties, pencil marks and a grid that always
+          has exactly one answer, so no solve ever needs a guess.</p>
+        <div class="game-stats">
+          <span>easy · <b id="st-sudoku-e">none</b></span>
+          <span>medium · <b id="st-sudoku-m">none</b></span>
+          <span>hard · <b id="st-sudoku-h">none</b></span>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/sudoku/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/sudoku">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card soon fade-up" style="--d:10;" aria-label="Coming soon">
+        <header>
+          <h3>Cabinet 09</h3>
           <span class="badge"><span class="dot off"></span>Soon</span>
         </header>
         <p class="desc">Under construction. Tetris? Solitaire? Breakout? Vote by
@@ -341,6 +371,12 @@
     [["beginner", "st-mines-b"], ["intermediate", "st-mines-i"], ["expert", "st-mines-e"]]
       .forEach(function (pair) {
         var best = Arcade.bestMinesweeper(pair[0]);
+        if (best) document.getElementById(pair[1]).textContent = Arcade.fmtTime(best.timeMs);
+      });
+
+    [["easy", "st-sudoku-e"], ["medium", "st-sudoku-m"], ["hard", "st-sudoku-h"]]
+      .forEach(function (pair) {
+        var best = Arcade.bestSudoku(pair[0]);
         if (best) document.getElementById(pair[1]).textContent = Arcade.fmtTime(best.timeMs);
       });
 
