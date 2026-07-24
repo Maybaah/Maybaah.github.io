@@ -160,6 +160,18 @@
           "playMode": ["MultiPlayer", "CoOp"],
           "inLanguage": ["en", "ru"],
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 10,
+          "name": "Pac-Man",
+          "url": "https://maybaah.github.io/pacman/",
+          "description": "Clear the maze of pellets while four ghosts hunt you, each by its own rule. Power pellets turn the tables, and every run is replay-verified.",
+          "genre": "Arcade game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
         }
       ]
     }
@@ -353,9 +365,26 @@
         </div>
       </article>
 
-      <article class="game-card soon fade-up" style="--d:11;" aria-label="Coming soon">
+      <article class="game-card fade-up" style="--d:11;">
         <header>
-          <h3>Cabinet 10</h3>
+          <h3>Pac-Man</h3>
+          <span class="badge"><span class="dot"></span>Online</span>
+        </header>
+        <p class="desc">Clear the maze while four ghosts hunt you, each by its
+          own rule. Power pellets turn the tables for a few seconds.</p>
+        <div class="game-stats">
+          <span>your best · <b id="st-pacman">no runs yet</b></span>
+          <span>level · <b id="st-pacman-level">none</b></span>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/pacman/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/pacman">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card soon fade-up" style="--d:12;" aria-label="Coming soon">
+        <header>
+          <h3>Cabinet 11</h3>
           <span class="badge"><span class="dot off"></span>Soon</span>
         </header>
         <p class="desc">Under construction. Tetris? Solitaire? Breakout? Vote by
@@ -425,6 +454,13 @@
       })[0];
       document.getElementById("st-snake").textContent = bestSnake.apples + " apples";
       document.getElementById("st-snake-len").textContent = bestSnake.apples + 3;
+    }
+
+    var pac = Arcade.getScores("pacman");
+    if (pac.length) {
+      var bestPac = pac.slice().sort(function (a, b) { return b.points - a.points; })[0];
+      document.getElementById("st-pacman").textContent = bestPac.points + " pts";
+      document.getElementById("st-pacman-level").textContent = bestPac.level;
     }
   })();
 </script>

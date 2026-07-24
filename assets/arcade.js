@@ -306,6 +306,25 @@
       },
     },
 
+    pacman: {
+      label: "Pac-Man",
+      path: "/pacman/",
+      columns: ["Player", "Score", "Level", "Pellets", "When"],
+      row: (s) => [{ html: nameCell(s.name) }, num(s.points), num(s.level), num(s.dots), when(s.at)],
+      axes: [{ id: "range", label: "Range", options: RANGE }],
+      hint: "clear the maze, the ghosts are the clock",
+      resolve(st) {
+        const daily = st.range === "today";
+        return {
+          board: "classic" + (daily ? dailySuffix() : ""),
+          meta: daily
+            ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
+            : "all-time board · finished runs only, replayed frame by frame",
+          empty: daily ? "No finished Pac-Man runs today yet." : "No finished Pac-Man runs yet.",
+        };
+      },
+    },
+
     /* Chess is the one board that is not a run at all. There is no tape to
        replay, so chess-match rates the match it refereed and writes the Elo
        straight into the same table. A rating is a running number rather than a

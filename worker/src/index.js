@@ -716,6 +716,584 @@ function verifySnake(body) {
   };
 }
 
+/* ═══════════════ pacman ═══════════════ */
+
+/* ── the engine ──
+   Duplicated, byte for byte, from pacman/game.js. Same rule as the sudoku
+   generator: drift means the page offers a run this referee rebuilds
+   differently, and every submission stops verifying. */
+
+  const PAC_MAZE = [
+    "############################",
+    "#............##............#",
+    "#.####.#####.##.#####.####.#",
+    "#o####.#####.##.#####.####o#",
+    "#.####.#####.##.#####.####.#",
+    "#..........................#",
+    "#.####.##.########.##.####.#",
+    "#.####.##.########.##.####.#",
+    "#......##....##....##......#",
+    "######.#####.##.#####.######",
+    "     #.##### ## #####.#     ",
+    "     #.##          ##.#     ",
+    "     #.## ###--### ##.#     ",
+    "######.## #      # ##.######",
+    "          #      #          ",
+    "######.## #      # ##.######",
+    "     #.## ######## ##.#     ",
+    "     #.##          ##.#     ",
+    "     #.## ######## ##.#     ",
+    "######.## ######## ##.######",
+    "#............##............#",
+    "#.####.#####.##.#####.####.#",
+    "#.####.#####.##.#####.####.#",
+    "#o..##.......  .......##..o#",
+    "###.##.##.########.##.##.###",
+    "###.##.##.########.##.##.###",
+    "#......##....##....##......#",
+    "#.##########.##.##########.#",
+    "#.##########.##.##########.#",
+    "#..........................#",
+    "############################",
+  ];
+  const PAC_COLS = 28, PAC_ROWS = 31, PAC_TILE = 16;
+  const PAC_FULL = 2.0, PAC_FPS = 60;
+  const PAC_GRID = PAC_MAZE.map((r) => r.split(""));
+
+  const PAC_DIRS = {
+    up: { x: 0, y: -1 },
+    left: { x: -1, y: 0 },
+    down: { x: 0, y: 1 },
+    right: { x: 1, y: 0 },
+  };
+  const PAC_DIR_ORDER = ["up", "left", "down", "right"];
+  const PAC_DIR_CHAR = { up: "u", left: "l", down: "d", right: "r" };
+  const PAC_OPP = { up: "down", down: "up", left: "right", right: "left" };
+  /* Tiles where a chasing or scattering ghost may not choose to turn upward,
+     exactly as the arcade forbids it above the house and in the lower field. */
+  const PAC_NO_UP = ["12,11", "15,11", "12,23", "15,23"];
+
+  const PAC_SCHEDULE = [
+    { mode: "scatter", t: 7 }, { mode: "chase", t: 20 },
+    { mode: "scatter", t: 7 }, { mode: "chase", t: 20 },
+    { mode: "scatter", t: 5 }, { mode: "chase", t: 20 },
+    { mode: "scatter", t: 5 }, { mode: "chase", t: Infinity },
+  ];
+
+  const PAC_CAST = [
+    { name: "blinky", scatter: { x: 25, y: 0 }, seatCol: 13, dotLimit: 0 },
+    { name: "pinky", scatter: { x: 2, y: 0 }, seatCol: 13, dotLimit: 0 },
+    { name: "inky", scatter: { x: 27, y: 30 }, seatCol: 11, dotLimit: 30 },
+    { name: "clyde", scatter: { x: 0, y: 30 }, seatCol: 15, dotLimit: 60 },
+  ];
+
+  function pacMulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function pacLevelCfg(L) {
+    return {
+      pac: L === 1 ? 0.8 : L <= 4 ? 0.9 : 1.0,
+      pacFright: L === 1 ? 0.9 : L <= 4 ? 0.95 : 1.0,
+      ghost: L === 1 ? 0.75 : L <= 4 ? 0.85 : 0.95,
+      fright: L === 1 ? 0.5 : L <= 4 ? 0.55 : 0.6,
+      tunnel: L === 1 ? 0.4 : L <= 4 ? 0.45 : 0.5,
+      frightSec: L <= 1 ? 6 : L <= 2 ? 5 : L <= 4 ? 3 : L <= 6 ? 2 : L <= 9 ? 1 : 0,
+      elroy1: 20, elroy2: 10,
+    };
+  }
+
+  const pacCX = (tx) => tx * PAC_TILE + PAC_TILE / 2;
+  const pacCY = (ty) => ty * PAC_TILE + PAC_TILE / 2;
+  const pacIsDoor = (x, y) => y === 12 && (x === 13 || x === 14);
+  const pacInHouse = (x, y) => y >= 13 && y <= 15 && x >= 11 && x <= 16;
+
+  function pacWrapCol(x) {
+    if (x < 0) return PAC_COLS - 1;
+    if (x >= PAC_COLS) return 0;
+    return x;
+  }
+
+  /* mode: "pac" and "out" are blocked by the door and the house, "free" (a
+     ghost leaving, returning as eyes, or re-entering) may pass both. */
+  function pacCanEnter(x, y, mode) {
+    if (y < 0 || y >= PAC_ROWS) return false;
+    if (PAC_GRID[y][x] === "#") return false;
+    if (mode === "free") return true;
+    if (pacIsDoor(x, y) || pacInHouse(x, y)) return false;
+    return true;
+  }
+
+  function pacFruitPoints(L) {
+    const table = [100, 300, 500, 500, 700, 700, 1000, 1000, 2000, 2000, 3000, 3000, 5000];
+    return table[Math.min(L - 1, table.length - 1)];
+  }
+
+  function pacBuildDots(S) {
+    S.dots = [];
+    S.dotTotal = 0;
+    for (let y = 0; y < PAC_ROWS; y++) {
+      S.dots[y] = [];
+      for (let x = 0; x < PAC_COLS; x++) {
+        const ch = PAC_GRID[y][x];
+        if (ch === ".") { S.dots[y][x] = 1; S.dotTotal++; }
+        else if (ch === "o") { S.dots[y][x] = 2; S.dotTotal++; }
+        else S.dots[y][x] = 0;
+      }
+    }
+  }
+
+  function pacSeat(S, g, tx, ty, st) {
+    g.tx = tx; g.ty = ty; g.px = pacCX(tx); g.py = pacCY(ty); g.state = st;
+  }
+
+  function pacPlaceActors(S) {
+    const p = S.pac;
+    p.tx = 14; p.ty = 23; p.px = pacCX(14); p.py = pacCY(23);
+    p.dir = "left"; p.next = "left"; p.deadT = 0;
+    for (const g of S.ghosts) {
+      g.frightened = false; g.reverse = false; g.bob = 0;
+      g.dir = g.name === "blinky" ? "left" : "up";
+    }
+    pacSeat(S, S.ghosts[0], 13, 11, "out");
+    pacSeat(S, S.ghosts[1], 13, 14, "home");
+    pacSeat(S, S.ghosts[2], 11, 14, "home");
+    pacSeat(S, S.ghosts[3], 15, 14, "home");
+  }
+
+  function pacResetLevel(S, full) {
+    S.cfg = pacLevelCfg(S.level);
+    if (full) pacBuildDots(S);
+    let left = 0;
+    for (let y = 0; y < PAC_ROWS; y++) for (let x = 0; x < PAC_COLS; x++) if (S.dots[y][x]) left++;
+    S.dotsLeft = left;
+    S.dotsEaten = S.dotTotal - left;
+    S.scheduleIdx = 0; S.scheduleT = 0; S.globalMode = PAC_SCHEDULE[0].mode;
+    S.frightT = 0; S.ghostCombo = 0; S.forceTimer = 0;
+    S.fruit = null; S.popup = null;
+    for (const g of S.ghosts) { g.dotCount = 0; g.released = g.name === "blinky"; }
+    pacPlaceActors(S);
+  }
+
+  function pacNew(seed) {
+    const S = {
+      seed: seed >>> 0,
+      rnd: pacMulberry32(seed >>> 0),
+      dots: null, dotTotal: 0, dotsLeft: 0, dotsEaten: 0,
+      level: 1, lives: 3, score: 0,
+      state: "ready", stateT: 0, frame: 0,
+      cfg: null,
+      pac: { tx: 0, ty: 0, px: 0, py: 0, dir: "left", next: "left", deadT: 0 },
+      ghosts: PAC_CAST.map((c) => ({
+        name: c.name, scatter: c.scatter, seatCol: c.seatCol, dotLimit: c.dotLimit,
+        tx: 0, ty: 0, px: 0, py: 0, dir: "left", state: "home",
+        dotCount: 0, released: false, frightened: false, reverse: false, bob: 0,
+      })),
+      scheduleIdx: 0, scheduleT: 0, globalMode: "scatter",
+      frightT: 0, ghostCombo: 0, forceTimer: 0,
+      fruit: null, popup: null, extraAwarded: false, over: false,
+      turns: [],
+    };
+    pacResetLevel(S, true);
+    return S;
+  }
+
+  function pacSetDir(S, dir) {
+    if (PAC_DIRS[dir]) S.pac.next = dir;
+  }
+
+  /* Move `e` by `dist` pixels. Position between two tile centers is tracked as
+     progress from (tx,ty)'s centre, so fractional speeds never drift: every
+     crossing re-snaps exactly, and turns are only offered at a centre. */
+  function pacAdvance(S, e, dist, decide) {
+    let budget = dist, guard = 0;
+    while (budget > 1e-6 && guard++ < 32) {
+      const progress = Math.abs(e.px - pacCX(e.tx)) + Math.abs(e.py - pacCY(e.ty));
+      if (progress < 1e-6) {
+        const chosen = decide(S, e);
+        if (!chosen) return;
+        e.dir = chosen;
+      }
+      const d = PAC_DIRS[e.dir];
+      const remaining = PAC_TILE - Math.abs(e.px - pacCX(e.tx)) - Math.abs(e.py - pacCY(e.ty));
+      const step = Math.min(budget, remaining);
+      if (step >= remaining - 1e-6) {
+        e.tx = pacWrapCol(e.tx + d.x);
+        e.ty = e.ty + d.y;
+        e.px = pacCX(e.tx);
+        e.py = pacCY(e.ty);
+        budget -= remaining;
+      } else {
+        e.px += d.x * step; e.py += d.y * step;
+        budget -= step;
+      }
+    }
+  }
+
+  function pacDecidePac(S, e) {
+    const nd = PAC_DIRS[e.next];
+    if (pacCanEnter(pacWrapCol(e.tx + nd.x), e.ty + nd.y, "pac")) {
+      if (e.next !== e.dir) S.turns.push({ f: S.frame, d: e.next });
+      return e.next;
+    }
+    const cd = PAC_DIRS[e.dir];
+    if (pacCanEnter(pacWrapCol(e.tx + cd.x), e.ty + cd.y, "pac")) return e.dir;
+    return null;
+  }
+
+  function pacGhostTarget(S, g) {
+    if (g.state === "eyes") return { x: 13, y: 11 };
+    if (S.globalMode === "scatter" && !g.frightened) return g.scatter;
+    const p = { x: S.pac.tx, y: S.pac.ty };
+    const pd = PAC_DIRS[S.pac.dir];
+    if (g.name === "blinky") return p;
+    if (g.name === "pinky") {
+      // four tiles ahead, carrying the arcade's up-vector overflow
+      let tx = p.x + pd.x * 4, ty = p.y + pd.y * 4;
+      if (S.pac.dir === "up") tx -= 4;
+      return { x: tx, y: ty };
+    }
+    if (g.name === "inky") {
+      let tx = p.x + pd.x * 2, ty = p.y + pd.y * 2;
+      if (S.pac.dir === "up") tx -= 2;
+      const b = S.ghosts[0];
+      return { x: tx * 2 - b.tx, y: ty * 2 - b.ty };
+    }
+    const dx = g.tx - p.x, dy = g.ty - p.y;
+    if (dx * dx + dy * dy > 64) return p;
+    return g.scatter;
+  }
+
+  function pacDecideGhost(S, g) {
+    const mode = (g.state === "eyes" || g.state === "leaving" || g.state === "entering") ? "free" : "out";
+    const back = PAC_OPP[g.dir];
+
+    if (g.reverse) {
+      g.reverse = false;
+      const d = PAC_DIRS[back];
+      if (pacCanEnter(pacWrapCol(g.tx + d.x), g.ty + d.y, mode)) return back;
+    }
+
+    if (g.frightened && g.state === "out") {
+      const opts = [];
+      for (const name of PAC_DIR_ORDER) {
+        if (name === back) continue;
+        const d = PAC_DIRS[name];
+        if (pacCanEnter(pacWrapCol(g.tx + d.x), g.ty + d.y, mode)) opts.push(name);
+      }
+      const list = opts.length ? opts : [back];
+      return list[Math.floor(S.rnd() * list.length) % list.length];
+    }
+
+    const target = pacGhostTarget(S, g);
+    let best = null, bestDist = Infinity;
+    for (const name of PAC_DIR_ORDER) {
+      if (name === back) continue;
+      if (name === "up" && mode === "out" && PAC_NO_UP.indexOf(g.tx + "," + g.ty) !== -1) continue;
+      const d = PAC_DIRS[name];
+      const nx = pacWrapCol(g.tx + d.x), ny = g.ty + d.y;
+      if (!pacCanEnter(nx, ny, mode)) continue;
+      const ddx = nx - target.x, ddy = ny - target.y;
+      const dist = ddx * ddx + ddy * ddy;
+      if (dist < bestDist) { bestDist = dist; best = name; }
+    }
+    if (best) return best;
+    const d = PAC_DIRS[back];
+    if (pacCanEnter(pacWrapCol(g.tx + d.x), g.ty + d.y, mode)) return back;
+    return g.dir;
+  }
+
+  function pacGhostSpeed(S, g) {
+    if (g.state === "eyes") return PAC_FULL * 1.5;
+    if (g.state === "leaving" || g.state === "entering" || g.state === "home") return PAC_FULL * 0.5;
+    if (g.frightened) return PAC_FULL * S.cfg.fright;
+    if (g.ty === 14 && (g.tx <= 5 || g.tx >= 22)) return PAC_FULL * S.cfg.tunnel;
+    if (g.name === "blinky") {
+      if (S.dotsLeft <= S.cfg.elroy2) return PAC_FULL * 0.85;
+      if (S.dotsLeft <= S.cfg.elroy1) return PAC_FULL * 0.8;
+    }
+    return PAC_FULL * S.cfg.ghost;
+  }
+
+  function pacStepHouse(S, g) {
+    const exitX = pacCX(13), topY = pacCY(11), midY = pacCY(14);
+    if (g.state === "home") {
+      g.bob += 1;
+      g.py = pacCY(14) + Math.sin(g.bob * 0.12) * 4;
+      g.px = pacCX(g.seatCol);
+      return;
+    }
+    if (g.state === "leaving") {
+      const sp = PAC_FULL * 0.5;
+      if (Math.abs(g.px - exitX) > 0.5) {
+        g.px += Math.sign(exitX - g.px) * Math.min(sp, Math.abs(exitX - g.px));
+        g.py = midY;
+      } else {
+        g.px = exitX;
+        g.py -= Math.min(sp, g.py - topY);
+        if (g.py <= topY) {
+          g.py = topY; g.tx = 13; g.ty = 11;
+          g.state = "out"; g.dir = "left";
+          g.frightened = S.frightT > 0;
+        }
+      }
+      return;
+    }
+    if (g.state === "entering") {
+      const sp = PAC_FULL * 0.8;
+      if (Math.abs(g.px - exitX) > 0.5) {
+        g.px += Math.sign(exitX - g.px) * Math.min(sp, Math.abs(exitX - g.px));
+      } else if (g.py < midY) {
+        g.px = exitX;
+        g.py += Math.min(sp, midY - g.py);
+      } else {
+        g.py = midY; g.tx = 13; g.ty = 14;
+        g.state = "leaving";
+      }
+    }
+  }
+
+  function pacReleaseNext(S) {
+    for (let i = 1; i < S.ghosts.length; i++) {
+      const g = S.ghosts[i];
+      if (g.state === "home" && !g.released) { g.released = true; g.state = "leaving"; return true; }
+    }
+    return false;
+  }
+
+  function pacHouseCounters(S) {
+    for (let i = 1; i < S.ghosts.length; i++) {
+      const g = S.ghosts[i];
+      if (g.state === "home") {
+        if (!g.released) {
+          g.dotCount++;
+          if (g.dotCount >= g.dotLimit) { g.released = true; g.state = "leaving"; }
+        }
+        return;
+      }
+    }
+  }
+
+  function pacStepMode(S) {
+    if (S.frightT > 0) return;            // the schedule freezes while frightened
+    const cur = PAC_SCHEDULE[S.scheduleIdx];
+    if (cur.t === Infinity) { S.globalMode = cur.mode; return; }
+    S.scheduleT++;
+    if (S.scheduleT >= cur.t * PAC_FPS) {
+      S.scheduleIdx = Math.min(S.scheduleIdx + 1, PAC_SCHEDULE.length - 1);
+      S.scheduleT = 0;
+      const nm = PAC_SCHEDULE[S.scheduleIdx].mode;
+      if (nm !== S.globalMode) {
+        S.globalMode = nm;
+        for (const g of S.ghosts) if (g.state === "out") g.reverse = true;
+      }
+    }
+  }
+
+  function pacStartFright(S) {
+    if (S.cfg.frightSec <= 0) { S.ghostCombo = 0; return; }
+    S.frightT = S.cfg.frightSec * PAC_FPS;
+    S.ghostCombo = 0;
+    for (const g of S.ghosts) {
+      if (g.state === "out") { g.frightened = true; g.reverse = true; }
+    }
+  }
+
+  function pacCheckExtra(S) {
+    if (!S.extraAwarded && S.score >= 10000) { S.extraAwarded = true; S.lives++; }
+  }
+
+  function pacEatDot(S, x, y) {
+    const kind = S.dots[y][x];
+    S.dots[y][x] = 0;
+    S.dotsLeft--; S.dotsEaten++;
+    S.forceTimer = 0;
+    pacHouseCounters(S);
+    if (kind === 2) { S.score += 50; pacStartFright(S); }
+    else S.score += 10;
+    if ((S.dotsEaten === 70 || S.dotsEaten === 170) && !S.fruit) {
+      S.fruit = { tx: 13, ty: 17, points: pacFruitPoints(S.level), t: 9 * PAC_FPS + Math.floor(S.rnd() * PAC_FPS) };
+    }
+    pacCheckExtra(S);
+    if (S.dotsLeft <= 0) { S.state = "clear"; S.stateT = 0; }
+  }
+
+  function pacCollide(S) {
+    for (const g of S.ghosts) {
+      if (g.state !== "out") continue;
+      const dx = g.px - S.pac.px, dy = g.py - S.pac.py;
+      if (dx * dx + dy * dy > 100) continue;
+      if (g.frightened) {
+        const pts = 200 * (1 << S.ghostCombo);
+        S.ghostCombo = Math.min(S.ghostCombo + 1, 3);
+        S.score += pts;
+        S.popup = { x: g.px, y: g.py, text: String(pts), t: 40 };
+        g.state = "eyes"; g.frightened = false;
+        pacCheckExtra(S);
+      } else {
+        S.pac.deadT = 0;
+        S.state = "dying"; S.stateT = 0;
+        return;
+      }
+    }
+  }
+
+  /* One logical tick at 60Hz. Every branch is a pure function of S, so the
+     Worker walking the same tape lands on the same score. */
+  function pacStep(S) {
+    S.frame++;
+
+    if (S.state === "ready") {
+      S.stateT++;
+      if (S.stateT > 2 * PAC_FPS) { S.state = "play"; S.stateT = 0; }
+      return;
+    }
+    if (S.state === "clear") {
+      S.stateT++;
+      if (S.stateT > 2 * PAC_FPS) {
+        S.level++;
+        pacResetLevel(S, true);
+        S.state = "ready"; S.stateT = 0;
+      }
+      return;
+    }
+    if (S.state === "dying") {
+      S.stateT++;
+      S.pac.deadT = S.stateT;
+      if (S.stateT > 1.6 * PAC_FPS) {
+        S.lives--;
+        if (S.lives <= 0) { S.state = "over"; S.over = true; return; }
+        pacResetLevel(S, false);
+        S.state = "ready"; S.stateT = 0;
+      }
+      return;
+    }
+    if (S.state !== "play") return;
+
+    const p = S.pac;
+    pacAdvance(S, p, S.frightT > 0 ? PAC_FULL * S.cfg.pacFright : PAC_FULL * S.cfg.pac, pacDecidePac);
+    if (S.dots[p.ty] && S.dots[p.ty][p.tx]) pacEatDot(S, p.tx, p.ty);
+    if (S.state !== "play") return;
+
+    if (S.fruit) {
+      S.fruit.t--;
+      if (S.fruit.t <= 0) S.fruit = null;
+      else {
+        const dx = pacCX(S.fruit.tx) - p.px, dy = pacCY(S.fruit.ty) - p.py;
+        if (dx * dx + dy * dy < 100) {
+          S.score += S.fruit.points;
+          S.popup = { x: p.px, y: p.py, text: String(S.fruit.points), t: 50 };
+          S.fruit = null;
+          pacCheckExtra(S);
+        }
+      }
+    }
+
+    pacStepMode(S);
+    if (S.frightT > 0) {
+      S.frightT--;
+      if (S.frightT === 0) for (const g of S.ghosts) g.frightened = false;
+    }
+    S.forceTimer++;
+    if (S.forceTimer > 4 * PAC_FPS) { S.forceTimer = 0; pacReleaseNext(S); }
+
+    for (const g of S.ghosts) {
+      if (g.state === "home" || g.state === "leaving" || g.state === "entering") {
+        pacStepHouse(S, g);
+        continue;
+      }
+      pacAdvance(S, g, pacGhostSpeed(S, g), pacDecideGhost);
+      if (g.state === "eyes" && g.tx === 13 && g.ty === 11) {
+        g.state = "entering";
+        g.px = pacCX(13); g.py = pacCY(11);
+      }
+    }
+
+    pacCollide(S);
+    if (S.popup) { S.popup.t--; if (S.popup.t <= 0) S.popup = null; }
+  }
+
+  /* The tape: "<frames since the last turn><direction>", repeated. */
+  function pacEncodeTape(turns) {
+    let out = "", last = 0;
+    for (const t of turns) {
+      out += (t.f - last) + PAC_DIR_CHAR[t.d];
+      last = t.f;
+    }
+    return out;
+  }
+
+  /* ── the engine ── */
+
+const PACMAN_MAX_FRAMES = 60000;
+const PACMAN_MAX_TURNS = 4000;
+const PACMAN_DIR_NAME = { u: "up", l: "left", d: "down", r: "right" };
+
+function verifyPacman(body) {
+  const seed = Number(body.seed);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    return { ok: false, reason: "bad seed" };
+  }
+  const moves = body.moves;
+  if (typeof moves !== "string" || moves.length > 8 * PACMAN_MAX_TURNS) {
+    return { ok: false, reason: "bad move log" };
+  }
+  if (moves !== "" && !/^(\d{1,6}[uldr])*$/.test(moves)) {
+    return { ok: false, reason: "bad move log" };
+  }
+  const events = moves.match(/\d{1,6}[uldr]/g) || [];
+  if (events.length > PACMAN_MAX_TURNS) return { ok: false, reason: "bad move log" };
+
+  const turns = [];
+  let at = 0;
+  for (const ev of events) {
+    at += Number(ev.slice(0, -1));
+    if (at > PACMAN_MAX_FRAMES) return { ok: false, reason: "that run is too long" };
+    // the game commits at most one turn per frame, so a second is a tape no
+    // client could have produced
+    if (turns.length && at <= turns[turns.length - 1].f) {
+      return { ok: false, reason: "two turns on one frame" };
+    }
+    turns.push({ f: at, d: PACMAN_DIR_NAME[ev[ev.length - 1]] });
+  }
+
+  const S = pacNew(seed >>> 0);
+  let ei = 0;
+  while (!S.over && S.frame < PACMAN_MAX_FRAMES) {
+    while (ei < turns.length && turns[ei].f === S.frame + 1) {
+      pacSetDir(S, turns[ei].d);
+      ei++;
+    }
+    pacStep(S);
+  }
+  if (!S.over) return { ok: false, reason: "that run is too long" };
+
+  /* The replay records the turns it actually committed. If those differ from
+     the tape, the tape is not something this engine could have produced: a
+     turn on a frame Pac was not at a tile centre, or into a wall, lands here. */
+  if (S.turns.length !== turns.length) {
+    return { ok: false, reason: "move log does not match the run" };
+  }
+  for (let i = 0; i < turns.length; i++) {
+    if (S.turns[i].f !== turns[i].f || S.turns[i].d !== turns[i].d) {
+      return { ok: false, reason: "move log does not match the run" };
+    }
+  }
+
+  return {
+    ok: true,
+    board: "classic",
+    /* Boards sort ascending, so a bigger score has to compare lower. */
+    score: -S.score,
+    detail: { points: S.score, level: S.level, dots: S.dotsEaten, frames: S.frame },
+  };
+}
+
 /* ═══════════════ plumbing ═══════════════ */
 
 const GAMES = {
@@ -724,6 +1302,7 @@ const GAMES = {
   sudoku: verifySudoku,
   "2048": verify2048,
   snake: verifySnake,
+  pacman: verifyPacman,
 };
 
 /* flowcode stores its rows in this database too, but it verifies them in its
