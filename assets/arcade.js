@@ -52,6 +52,7 @@
     list.push(Object.assign({ name: getPlayer(), ts: Date.now() }, entry));
     if (list.length > MAX_PER_GAME) list.splice(0, list.length - MAX_PER_GAME);
     save(d);
+    return earn(game, entry);
   }
 
   /* Best-run helpers used by the arcade hub cards */
@@ -88,6 +89,152 @@
 
   function fmtDate(ts) {
     return new Date(ts).toISOString().slice(0, 10);
+  }
+
+  /* ── coins ───────────────────────────────────────────────────────────────
+     One wallet, in the same store as the local bests, so the arcade keeps its
+     one identity and one key. Coins are cosmetic: they buy the site's themes
+     and nothing else, which is why they are counted in the browser rather than
+     defended by a Worker. The daily cap is there so a farmed practice run pays
+     less than a real one, not to stop anyone editing localStorage. */
+
+  const DAILY_CAP = 500;
+  const DEFAULT_THEME = "midnight";
+
+  const THEMES = [
+    { id: "midnight", price: 0, label: "Midnight", note: "the default: black, one grey, no noise" },
+    { id: "ember", price: 150, label: "Ember", note: "warm charcoal, amber accent" },
+    { id: "forest", price: 250, label: "Forest", note: "deep green dusk, mint accent" },
+    { id: "ultraviolet", price: 400, label: "Ultraviolet", note: "ink violet, lilac accent" },
+    { id: "neon", price: 600, label: "Neon", note: "cabinet blue, cyan accent" },
+    { id: "paper", price: 900, label: "Paper", note: "the light one: ink on off-white" },
+  ];
+
+  /* What a finished run is worth, one line per cabinet, reading the same entry
+     the game already writes to its local board. */
+  const REWARDS = {
+    wordle: (s) => (s.result === "win" ? 8 + Math.max(0, 7 - s.guesses) * 3 : 2),
+    minesweeper: (s) => (s.result === "win"
+      ? { beginner: 6, intermediate: 14, expert: 28 }[s.difficulty] || 6
+      : 1),
+    sudoku: (s) => (s.result === "win"
+      ? { easy: 8, medium: 16, hard: 28 }[s.difficulty] || 8
+      : 1),
+    "2048": (s) => 4 + Math.min(46, Math.floor((s.points || 0) / 400)),
+    snake: (s) => 2 + Math.min(38, Math.floor((s.apples || 0) * 1.5)),
+    pacman: (s) => 4 + Math.min(46, Math.floor((s.points || 0) / 300)),
+    /* refereed games have no run to score, so they pay a flat rate for
+       finishing one */
+    codenames: (s) => (s.result === "win" ? 25 : 10),
+    chess: (s) => (s.result === "win" ? 30 : s.result === "draw" ? 15 : 8),
+    tictactoe: (s) => (s.result === "win" ? 8 : s.result === "draw" ? 4 : 2),
+  };
+
+  function wallet() {
+    const w = load().wallet || {};
+    const today = utcDayKey(0);
+    return {
+      coins: Math.max(0, Math.floor(w.coins) || 0),
+      spent: Math.max(0, Math.floor(w.spent) || 0),
+      owned: Array.isArray(w.owned) ? w.owned.slice() : [DEFAULT_THEME],
+      theme: typeof w.theme === "string" ? w.theme : DEFAULT_THEME,
+      day: today,
+      earnedToday: w.day === today ? Math.max(0, Math.floor(w.earnedToday) || 0) : 0,
+    };
+  }
+
+  function saveWallet(w) {
+    const d = load();
+    d.wallet = w;
+    save(d);
+    paintChip();
+  }
+
+  function coins() {
+    return wallet().coins;
+  }
+
+  function earn(game, entry) {
+    const rule = REWARDS[game];
+    if (!rule) return 0;
+    let amount = 0;
+    try { amount = Math.max(0, Math.floor(rule(entry || {}))); } catch { return 0; }
+    if (!amount) return 0;
+
+    const w = wallet();
+    amount = Math.min(amount, Math.max(0, DAILY_CAP - w.earnedToday));
+    if (!amount) return 0;
+    w.coins += amount;
+    w.earnedToday += amount;
+    saveWallet(w);
+    coinToast(amount);
+    return amount;
+  }
+
+  function owns(id) {
+    return id === DEFAULT_THEME || wallet().owned.indexOf(id) !== -1;
+  }
+
+  function buy(id) {
+    const item = THEMES.filter((x) => x.id === id)[0];
+    if (!item) return { ok: false, reason: "no such theme" };
+    if (owns(id)) return { ok: false, reason: "already yours" };
+    const w = wallet();
+    if (w.coins < item.price) return { ok: false, reason: "not enough coins" };
+    w.coins -= item.price;
+    w.spent += item.price;
+    w.owned.push(id);
+    w.theme = id;
+    saveWallet(w);
+    paintTheme();
+    return { ok: true, theme: id };
+  }
+
+  function setTheme(id) {
+    if (!owns(id)) return false;
+    const w = wallet();
+    w.theme = id;
+    saveWallet(w);
+    paintTheme();
+    return true;
+  }
+
+  function paintTheme() {
+    document.documentElement.setAttribute("data-theme", wallet().theme || DEFAULT_THEME);
+  }
+
+  /* The chip in the nav is the only thing every page has to grow for coins to
+     exist, so it is put there from here rather than pasted into ten heads. */
+  function paintChip() {
+    document.querySelectorAll(".coin-chip .n").forEach((n) => { n.textContent = coins(); });
+  }
+
+  function mountChip() {
+    const links = document.querySelector(".site-nav .nav-links");
+    if (!links || links.querySelector(".coin-chip")) return;
+    const chip = document.createElement("a");
+    chip.className = "coin-chip";
+    chip.href = "/shop/";
+    chip.title = "coins · spend them in the shop";
+    chip.innerHTML = '<span class="coin" aria-hidden="true"></span><span class="n">0</span>';
+    links.insertBefore(chip, links.firstChild);
+    paintChip();
+  }
+
+  function coinToast(n) {
+    if (!document.body) return;
+    const el = document.createElement("div");
+    el.className = "coin-toast";
+    el.textContent = "+" + n + " coins";
+    document.body.appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
+  }
+
+  paintTheme();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountChip);
+  } else {
+    mountChip();
   }
 
   /* ── global leaderboard API (same shape as flowcode's client) ── */
@@ -479,6 +626,14 @@
     playerId,
     top,
     submit,
+    coins,
+    wallet,
+    earn,
+    owns,
+    buy,
+    setTheme,
+    themes: THEMES,
+    dailyCap: DAILY_CAP,
     boards: BOARDS,
     mountBoard,
     table,

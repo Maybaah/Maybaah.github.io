@@ -12,6 +12,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/` | Portfolio: who I am, selected work, contact | this one |
 | `/arcade/` | Mini-games hub | this one |
 | `/leaderboard/` | Global boards for every arcade game | this one |
+| `/shop/` | Coins from finished runs, spent on site themes | this one |
 | `/wordle/` | Wordle: daily puzzle + practice | [Maybaah/wordle](https://github.com/Maybaah/wordle) |
 | `/minesweeper/` | Minesweeper: 3 difficulties, chording | [Maybaah/minesweeper](https://github.com/Maybaah/minesweeper) |
 | `/sudoku/` | Sudoku: 3 difficulties, pencil marks | [Maybaah/sudoku](https://github.com/Maybaah/sudoku) |
@@ -88,6 +89,21 @@ rating flat after the same pair have traded three games in a day.
 Games load [`assets/arcade.js`](assets/arcade.js) from this repo: it holds the
 local run history (localStorage), the shared player identity and the API client
 for the Worker (`https://arcade-leaderboard.maybeez.workers.dev`).
+
+## Coins and themes
+
+Every run a game records with `Arcade.addScore()` also pays coins, priced by the
+`REWARDS` table in [`assets/arcade.js`](assets/arcade.js), capped per day so a
+farmed practice run is worth less than a real one. A cabinet that submits a run
+gets this for free; a refereed game with no run to record calls `Arcade.earn()`
+itself when the game ends.
+
+Coins buy themes in [`/shop/`](shop/). A theme is a set of design tokens on
+`[data-theme]` in [`assets/site.css`](assets/site.css), stamped onto `<html>` by
+`arcade.js` before anything paints, so one purchase repaints the portfolio, the
+arcade, the boards and every cabinet at once. Nothing about this is defended
+server-side: the wallet lives in the same `maybaah:arcade:v1` key as the local
+bests, it is cosmetic, and no board reads it.
 
 ## Stack
 

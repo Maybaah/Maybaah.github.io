@@ -80,6 +80,14 @@ also shows what falls away with the replay model: no seed, no PRNG parity, no
 worth ranking. Reach for this only when a run genuinely cannot be replayed from
 one client's tape. Everything else stays on the model above.
 
+## Coins come free
+
+`Arcade.addScore()` pays the run in arcade coins on the way past, priced by the
+`REWARDS` table in `assets/arcade.js`. A new cabinet adds one line there and
+gets a wallet, the nav chip and the shop without touching its own page. A
+refereed game with no run to record calls `Arcade.earn(game, detail)` itself
+when the game ends.
+
 ## Storage
 
 One D1 database, `arcade`, one table, `scores`, keyed `(game, board, player)`.

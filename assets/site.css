@@ -4,6 +4,8 @@
    ───────────────────────────────────────────── */
 
 :root {
+  color-scheme: dark;
+
   --bg-base: #0a0a0a;
   --bg-surface: #111111;
   --bg-elevated: #1a1a1a;
@@ -19,9 +21,12 @@
 
   --accent: #e8e8e8;
   --accent-hover: #ffffff;
+  --accent-ink: #0a0a0a;
   --danger: #ef4444;
   --success: #22c55e;
   --warning: #f59e0b;
+
+  --nav-bg: rgba(10, 10, 10, 0.85);
 
   --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
@@ -29,6 +34,104 @@
   --radius: 8px;
   --radius-lg: 12px;
   --container: 1040px;
+}
+
+/* ── themes ──────────────────────────────────────────────────────────────
+   Bought in /shop/ with arcade coins and applied by arcade.js, which stamps
+   data-theme on <html> before anything paints. Every one of them is the same
+   design system with different tokens: nothing below this block knows which
+   theme is on. */
+
+[data-theme="ember"] {
+  --bg-base: #0c0a09;
+  --bg-surface: #14100e;
+  --bg-elevated: #1e1815;
+  --bg-overlay: #26201c;
+  --border: #302722;
+  --border-subtle: #221c18;
+  --border-focus: rgba(255, 200, 150, 0.18);
+  --text-primary: #f5efe9;
+  --text-secondary: #9a8b7f;
+  --text-muted: #635749;
+  --accent: #f0a24a;
+  --accent-hover: #ffb865;
+  --accent-ink: #1a1005;
+  --nav-bg: rgba(12, 10, 9, 0.85);
+}
+
+[data-theme="forest"] {
+  --bg-base: #070c09;
+  --bg-surface: #0d140f;
+  --bg-elevated: #141d17;
+  --bg-overlay: #1b261e;
+  --border: #22302a;
+  --border-subtle: #17211b;
+  --border-focus: rgba(150, 255, 200, 0.18);
+  --text-primary: #eaf3ec;
+  --text-secondary: #7f9a89;
+  --text-muted: #4e6357;
+  --accent: #6ee7a8;
+  --accent-hover: #8ff7c0;
+  --accent-ink: #04150c;
+  --nav-bg: rgba(7, 12, 9, 0.85);
+}
+
+[data-theme="ultraviolet"] {
+  --bg-base: #0a0812;
+  --bg-surface: #110e1c;
+  --bg-elevated: #191428;
+  --bg-overlay: #221b34;
+  --border: #2c2442;
+  --border-subtle: #1d1830;
+  --border-focus: rgba(200, 170, 255, 0.2);
+  --text-primary: #efeafb;
+  --text-secondary: #948aae;
+  --text-muted: #5f5680;
+  --accent: #c4a2ff;
+  --accent-hover: #d9c0ff;
+  --accent-ink: #10061f;
+  --nav-bg: rgba(10, 8, 18, 0.85);
+}
+
+[data-theme="neon"] {
+  --bg-base: #050a10;
+  --bg-surface: #0a1119;
+  --bg-elevated: #101a25;
+  --bg-overlay: #16232f;
+  --border: #1e3040;
+  --border-subtle: #14202c;
+  --border-focus: rgba(94, 242, 224, 0.24);
+  --text-primary: #e6f6ff;
+  --text-secondary: #7f9cb0;
+  --text-muted: #4e6b7d;
+  --accent: #5ef2e0;
+  --accent-hover: #8dfff1;
+  --accent-ink: #02141a;
+  --nav-bg: rgba(5, 10, 16, 0.85);
+}
+
+/* The one light theme. Cabinets that paint their own board stay dark inside
+   their frame, the way a screen does in a lit room. */
+[data-theme="paper"] {
+  color-scheme: light;
+
+  --bg-base: #f6f5f2;
+  --bg-surface: #ffffff;
+  --bg-elevated: #eeece7;
+  --bg-overlay: #e4e1da;
+  --border: #d9d5cc;
+  --border-subtle: #e7e4dd;
+  --border-focus: rgba(0, 0, 0, 0.24);
+  --text-primary: #17150f;
+  --text-secondary: #5f5a50;
+  --text-muted: #6f6a5e;
+  --accent: #1c1a15;
+  --accent-hover: #000000;
+  --accent-ink: #f8f7f4;
+  --danger: #b91c1c;
+  --success: #15803d;
+  --warning: #b45309;
+  --nav-bg: rgba(246, 245, 242, 0.85);
 }
 
 /* ── reset ── */
@@ -88,7 +191,7 @@ h3 { font-size: 16px; font-weight: 600; }
 /* ── nav ── */
 .site-nav {
   border-bottom: 1px solid var(--border-subtle);
-  background: rgba(10, 10, 10, 0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
@@ -108,11 +211,20 @@ h3 { font-size: 16px; font-weight: 600; }
   letter-spacing: 0.02em;
 }
 .wordmark .tld { color: var(--text-muted); font-weight: 400; }
+.wordmark { flex: none; }
+/* The row scrolls rather than the page: a narrow phone with the coin chip and
+   four links in the nav used to push the whole document sideways. */
 .nav-links {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.nav-links::-webkit-scrollbar { width: 0; height: 0; }
+.nav-links > * { flex: none; }
 .nav-links a {
   font-size: 13px;
   font-weight: 500;
@@ -123,6 +235,51 @@ h3 { font-size: 16px; font-weight: 600; }
 }
 .nav-links a:hover { color: var(--text-primary); background: var(--bg-elevated); }
 .nav-links a[aria-current="page"] { color: var(--text-primary); }
+
+/* ── the coin chip ──
+   arcade.js puts this in front of the nav links on every page that has a nav,
+   so a wallet does not have to be pasted into ten heads. */
+.nav-links .coin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 11px;
+  margin-right: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.nav-links .coin-chip:hover { background: transparent; border-color: var(--border-focus); }
+.coin-chip .coin {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--warning);
+  box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.35);
+}
+.coin-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 200;
+  pointer-events: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--warning);
+  animation: coin-rise 2600ms ease forwards;
+}
+@keyframes coin-rise {
+  0% { opacity: 0; transform: translateY(8px); }
+  8% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
 
 /* ── buttons ── */
 .btn {
@@ -138,11 +295,13 @@ h3 { font-size: 16px; font-weight: 600; }
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
   white-space: nowrap;
 }
-.btn-primary { background: var(--accent); color: #0a0a0a; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-secondary { border-color: var(--border); color: var(--text-primary); }
 .btn-secondary:hover { border-color: var(--border-focus); background: var(--bg-elevated); }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn-secondary:disabled:hover { border-color: var(--border); background: none; }
 
 /* ── badges ── */
 .badge {
@@ -293,7 +452,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
 }
 .pill:hover { color: var(--text-primary); }
-.pill[aria-pressed="true"] { color: #0a0a0a; background: var(--accent); border-color: var(--accent); }
+.pill[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
 .board-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
 .you { color: var(--success); font-family: var(--font-mono); font-size: 10px; margin-left: 8px; letter-spacing: 0.1em; }
 
