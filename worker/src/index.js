@@ -857,7 +857,7 @@ function verifySnake(body) {
     p.tx = 14; p.ty = 23; p.px = pacCX(14); p.py = pacCY(23);
     p.dir = "left"; p.next = "left"; p.deadT = 0;
     for (const g of S.ghosts) {
-      g.frightened = false; g.reverse = false; g.bob = 0;
+      g.frightened = false; g.reverse = false; g.bob = 0; g.revived = false;
       g.dir = g.name === "blinky" ? "left" : "up";
     }
     pacSeat(S, S.ghosts[0], 13, 11, "out");
@@ -892,7 +892,7 @@ function verifySnake(body) {
       ghosts: PAC_CAST.map((c) => ({
         name: c.name, scatter: c.scatter, seatCol: c.seatCol, dotLimit: c.dotLimit,
         tx: 0, ty: 0, px: 0, py: 0, dir: "left", state: "home",
-        dotCount: 0, released: false, frightened: false, reverse: false, bob: 0,
+        dotCount: 0, released: false, frightened: false, reverse: false, bob: 0, revived: false,
       })),
       scheduleIdx: 0, scheduleT: 0, globalMode: "scatter",
       frightT: 0, ghostCombo: 0, forceTimer: 0,
@@ -1039,7 +1039,10 @@ function verifySnake(body) {
         if (g.py <= topY) {
           g.py = topY; g.tx = 13; g.ty = 11;
           g.state = "out"; g.dir = "left";
-          g.frightened = S.frightT > 0;
+          /* a ghost regenerated after being eaten leaves normal even while the
+             energizer still runs; only ghosts that were merely waiting turn blue. */
+          g.frightened = S.frightT > 0 && !g.revived;
+          g.revived = false;
         }
       }
       return;
@@ -1133,7 +1136,7 @@ function verifySnake(body) {
         S.ghostCombo = Math.min(S.ghostCombo + 1, 3);
         S.score += pts;
         S.popup = { x: g.px, y: g.py, text: String(pts), t: 40 };
-        g.state = "eyes"; g.frightened = false;
+        g.state = "eyes"; g.frightened = false; g.revived = true;
         pacCheckExtra(S);
       } else {
         S.pac.deadT = 0;
