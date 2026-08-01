@@ -20,6 +20,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/snake/` | Snake: classic + daily seed challenge | [Maybaah/snake](https://github.com/Maybaah/snake) |
 | `/pacman/` | Pac-Man: maze chase with the arcade ghost AI | [Maybaah/pacman](https://github.com/Maybaah/pacman) |
 | `/aim/` | Aim trainer: 30 targets, 3 sizes, misses cost time | [Maybaah/aim](https://github.com/Maybaah/aim) |
+| `/aim3d/` | Aim 3D: first person gridshot at your own sensitivity | [Maybaah/aim3d](https://github.com/Maybaah/aim3d) |
 | `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
 | `/chess/` | Chess: 1v1 rooms + pass and play | [Maybaah/chess](https://github.com/Maybaah/chess) |
 | `/codenames/` | Codenames: team lobbies, English and Russian decks | [Maybaah/codenames](https://github.com/Maybaah/codenames) |
@@ -36,9 +37,12 @@ that never trusts a submitted score. A Wordle run is checked against the day's
 real answer; Minesweeper, Sudoku, 2048, Snake, Pac-Man and Aim trainer runs ship a
 seed and a move log, and the Worker rebuilds the board and replays the whole game
 before anything lands on a board. One row per player per board: your best run
-counts. The aim trainer is the one game whose clock the Worker cannot rebuild,
-only bound: the gaps between clicks are the browser's own timestamps, so it holds
-a floor and a ceiling over them and still computes the score itself.
+counts. The two aim trainers are the games whose clock the Worker cannot
+rebuild, only bound: the gaps between shots are the browser's own timestamps, so
+it holds a floor and a ceiling over them and still computes the score itself.
+Aim 3D submits the yaw and pitch of each shot rather than a point on a page, and
+the Worker fires the ray itself against the spheres it rebuilt from the seed.
+Sensitivity never leaves the browser, so no setting can buy a score.
 
 Every game stores its rows in the one `arcade` database, in the same `scores`
 table keyed `(game, board, player)`. flowcode is the exception in one respect
@@ -71,6 +75,7 @@ plays the same board.
 | Snake | `classic` | `classic-<YYYYMMDD>`, plus `daily-<YYYYMMDD>` for seeded runs |
 | Pac-Man | `classic` | `classic-<YYYYMMDD>` |
 | Aim trainer | `easy` / `medium` / `hard` | `<mode>-<YYYYMMDD>` |
+| Aim 3D | `easy` / `medium` / `hard` | `<mode>-<YYYYMMDD>` |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
 | Chess | `elo` | none |

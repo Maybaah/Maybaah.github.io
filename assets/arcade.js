@@ -55,6 +55,23 @@
     return earn(game, entry);
   }
 
+  /* Settings a cabinet has to remember between visits, a sensitivity or a
+     preferred field of view, kept under the game's name in this same store so
+     the arcade still has one key rather than one per cabinet. None of it is
+     ever submitted, and no board reads it. */
+  function prefs(game) {
+    const d = load();
+    return (d.prefs && d.prefs[game]) || null;
+  }
+
+  function setPrefs(game, patch) {
+    const d = load();
+    d.prefs = d.prefs || {};
+    d.prefs[game] = Object.assign({}, d.prefs[game], patch || {});
+    save(d);
+    return d.prefs[game];
+  }
+
   /* Best-run helpers used by the arcade hub cards */
   function bestWordle() {
     const wins = getScores("wordle").filter((s) => s.result === "win");
@@ -124,6 +141,7 @@
     snake: (s) => 2 + Math.min(38, Math.floor((s.apples || 0) * 1.5)),
     pacman: (s) => 4 + Math.min(46, Math.floor((s.points || 0) / 300)),
     aim: (s) => ({ easy: 6, medium: 12, hard: 22 }[s.mode] || 6),
+    aim3d: (s) => ({ easy: 8, medium: 16, hard: 28 }[s.mode] || 8),
     /* refereed games have no run to score, so they pay a flat rate for
        finishing one */
     codenames: (s) => (s.result === "win" ? 25 : 10),
@@ -499,6 +517,30 @@
       },
     },
 
+    aim3d: {
+      label: "Aim 3D",
+      path: "/aim3d/",
+      columns: ["Player", "Time", "Misses", "Acc", "When"],
+      row: (s) => [{ html: nameCell(s.name) }, { html: fmtTime(s.ms), num: true }, num(s.misses),
+                   { html: s.acc + "%", num: true }, when(s.at)],
+      axes: [
+        { id: "mode", label: "Targets", options: [
+          { id: "easy", label: "Easy" }, { id: "medium", label: "Medium" }, { id: "hard", label: "Hard" }] },
+        { id: "range", label: "Range", options: RANGE },
+      ],
+      hint: "thirty spheres, your own sensitivity",
+      resolve(st) {
+        const daily = st.range === "today";
+        return {
+          board: st.mode + (daily ? dailySuffix() : ""),
+          meta: daily
+            ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
+            : "all-time board · one row per player, your fastest run counts",
+          empty: daily ? "No " + st.mode + " runs today yet." : "No verified " + st.mode + " runs yet.",
+        };
+      },
+    },
+
     /* Chess is the one board that is not a run at all. There is no tape to
        replay, so chess-match rates the match it refereed and writes the Elo
        straight into the same table. A rating is a running number rather than a
@@ -645,6 +687,8 @@
     setPlayer,
     getScores,
     addScore,
+    prefs,
+    setPrefs,
     bestWordle,
     bestMinesweeper,
     bestSudoku,

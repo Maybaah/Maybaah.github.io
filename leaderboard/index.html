@@ -99,6 +99,7 @@
       <button class="tab" role="tab" id="tab-snake" aria-selected="false">Snake</button>
       <button class="tab" role="tab" id="tab-pacman" aria-selected="false">Pac-Man</button>
       <button class="tab" role="tab" id="tab-aim" aria-selected="false">Aim</button>
+      <button class="tab" role="tab" id="tab-aim3d" aria-selected="false">Aim 3D</button>
       <button class="tab" role="tab" id="tab-chess" aria-selected="false">Chess</button>
       <button class="tab" role="tab" id="tab-flowcode" aria-selected="false">flowcode</button>
     </div>
@@ -112,6 +113,7 @@
     <div class="board-panel" id="panel-snake" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-pacman" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-aim" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-aim3d" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-chess" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden></div>
 
@@ -146,7 +148,7 @@
        it comes back, so only the board being looked at costs a request. Refresh
        does the same thing on demand: it reloads the selected board with the
        pills it is currently set to, not all six. */
-    var tabs = ["wordle", "minesweeper", "sudoku", "2048", "snake", "pacman", "aim", "chess", "flowcode"];
+    var tabs = ["wordle", "minesweeper", "sudoku", "2048", "snake", "pacman", "aim", "aim3d", "chess", "flowcode"];
     var mounted = {};
     var active = null;
 

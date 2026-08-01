@@ -184,6 +184,18 @@
           "operatingSystem": "Any",
           "applicationCategory": "Game",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 12,
+          "name": "Aim 3D",
+          "url": "https://maybaah.github.io/aim3d/",
+          "description": "A first person aim trainer: pointer lock camera at your own sensitivity, three spheres on a wall, thirty to clear.",
+          "genre": "Reflex game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
         }
       ]
     }
@@ -413,9 +425,27 @@
         </div>
       </article>
 
-      <article class="game-card soon fade-up" style="--d:13;" aria-label="Coming soon">
+      <article class="game-card fade-up" style="--d:13;">
         <header>
-          <h3>Cabinet 12</h3>
+          <h3>Aim 3D</h3>
+          <span class="badge"><span class="dot"></span>Online</span>
+        </header>
+        <p class="desc">The same drill in first person: the mouse turns a camera
+          at your own sensitivity, three spheres up, thirty to clear.</p>
+        <div class="game-stats">
+          <span>easy · <b id="st-aim3d-e">none</b></span>
+          <span>medium · <b id="st-aim3d-m">none</b></span>
+          <span>hard · <b id="st-aim3d-h">none</b></span>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/aim3d/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/aim3d">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card soon fade-up" style="--d:14;" aria-label="Coming soon">
+        <header>
+          <h3>Cabinet 13</h3>
           <span class="badge"><span class="dot off"></span>Soon</span>
         </header>
         <p class="desc">Under construction. Tetris? Solitaire? Breakout? Vote by
@@ -487,14 +517,15 @@
       document.getElementById("st-snake-len").textContent = bestSnake.apples + 3;
     }
 
-    var aim = Arcade.getScores("aim");
-    [["easy", "st-aim-e"], ["medium", "st-aim-m"], ["hard", "st-aim-h"]]
-      .forEach(function (pair) {
-        var runs = aim.filter(function (s) { return s.mode === pair[0]; });
-        if (!runs.length) return;
-        var best = runs.sort(function (a, b) { return a.ms - b.ms; })[0];
-        document.getElementById(pair[1]).textContent = Arcade.fmtTime(best.ms);
+    [["aim", "st-aim-"], ["aim3d", "st-aim3d-"]].forEach(function (game) {
+      var runs = Arcade.getScores(game[0]);
+      [["easy", "e"], ["medium", "m"], ["hard", "h"]].forEach(function (pair) {
+        var forMode = runs.filter(function (s) { return s.mode === pair[0]; });
+        if (!forMode.length) return;
+        var best = forMode.sort(function (a, b) { return a.ms - b.ms; })[0];
+        document.getElementById(game[1] + pair[1]).textContent = Arcade.fmtTime(best.ms);
       });
+    });
 
     var pac = Arcade.getScores("pacman");
     if (pac.length) {

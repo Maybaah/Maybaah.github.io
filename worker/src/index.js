@@ -1442,6 +1442,197 @@ function verifyAim(body) {
   };
 }
 
+/* ═══════════════ aim 3d ═══════════════ */
+
+/* ── the engine ──
+   Duplicated, byte for byte, from aim3d/game.js. Same rule as the aim and
+   pacman engines: drift means the page calls a shot this referee rebuilds
+   differently, and every submission stops verifying. */
+
+  const AIM3_ROUNDS = 30;
+  const AIM3_POOL = 3;
+  const AIM3_DIST = 10;
+  const AIM3_HALF_W = 4.5;
+  const AIM3_HALF_H = 2.5;
+  const AIM3_PENALTY = 250;
+  const AIM3_MAX_MISSES = 200;
+  const AIM3_MIN_GAP = 40;
+  const AIM3_MAX_GAP = 20000;
+  const AIM3_PITCH_OFFSET = 90000;
+  const AIM3_YAW_SPAN = 360000;
+  /* The silhouette is where a sine's last bit can differ between two builds of
+     the same engine, so a shot inside this sliver of the edge is taken as the
+     page called it. It is a millionth of the radius: nothing to aim with. */
+  const AIM3_EPS = 1e-6;
+
+  const AIM3_MODES = {
+    easy: { r: 0.55, spread: 3.2 },
+    medium: { r: 0.35, spread: 4.0 },
+    hard: { r: 0.22, spread: 5.0 },
+  };
+
+  function aim3Mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* Spheres are drawn one at a time as the pool needs them, each pushed clear
+     of the ones already up, so the generator is consumed in hit order and both
+     sides walk it the same way. The reject loop is bounded, so it always ends. */
+  function aim3Draw(active, rnd, cfg) {
+    const gap = cfg.r * cfg.spread;
+    let x = 0, y = 0;
+    for (let t = 0; t < 24; t++) {
+      x = -AIM3_HALF_W + rnd() * (2 * AIM3_HALF_W);
+      y = -AIM3_HALF_H + rnd() * (2 * AIM3_HALF_H);
+      let clear = true;
+      for (let i = 0; i < active.length; i++) {
+        const dx = x - active[i].x, dy = y - active[i].y;
+        if (dx * dx + dy * dy < gap * gap) { clear = false; break; }
+      }
+      if (clear) break;
+    }
+    return { x, y, z: -AIM3_DIST, r: cfg.r };
+  }
+
+  function aim3New(mode, seed) {
+    const cfg = AIM3_MODES[mode];
+    const rnd = aim3Mulberry32(seed >>> 0);
+    const active = [];
+    for (let i = 0; i < AIM3_POOL; i++) active.push(aim3Draw(active, rnd, cfg));
+    return { cfg, rnd, active, hits: 0, misses: 0, timeMs: 0 };
+  }
+
+  /* Yaw is measured from straight ahead, which is -Z, and turns right. Pitch
+     rides the offset so the tape never has to carry a sign. */
+  function aim3Dir(yawMdeg, pitchMdeg) {
+    const yaw = (yawMdeg / 1000) * Math.PI / 180;
+    const pitch = ((pitchMdeg - AIM3_PITCH_OFFSET) / 1000) * Math.PI / 180;
+    const cp = Math.cos(pitch);
+    return { x: Math.sin(yaw) * cp, y: Math.sin(pitch), z: -Math.cos(yaw) * cp };
+  }
+
+  /* One ray against the whole pool. `struck` is the nearest sphere the ray
+     actually enters; `nearestRatio` is how close the ray came to the closest
+     one, in units of its radius, which is what the sliver above is measured in. */
+  function aim3Resolve(active, dir) {
+    let struck = -1, strikeT = Infinity, nearest = -1, nearestRatio = Infinity;
+    for (let i = 0; i < active.length; i++) {
+      const s = active[i];
+      const t = s.x * dir.x + s.y * dir.y + s.z * dir.z;
+      if (t <= 0) continue;
+      const px = s.x - dir.x * t, py = s.y - dir.y * t, pz = s.z - dir.z * t;
+      const ratio = (px * px + py * py + pz * pz) / (s.r * s.r);
+      if (ratio <= 1 && t < strikeT) { strikeT = t; struck = i; }
+      if (ratio < nearestRatio) { nearestRatio = ratio; nearest = i; }
+    }
+    return { struck, nearest, nearestRatio };
+  }
+
+  /* `claim` is null on the page, which decides the shot, and the page's own
+     mark in the Worker, which only has to agree with it. */
+  function aim3Apply(st, dir, claim) {
+    const r = aim3Resolve(st.active, dir);
+    let hit = r.struck >= 0;
+    let index = r.struck;
+    if (claim !== null && claim !== hit) {
+      if (r.nearestRatio < 1 - AIM3_EPS || r.nearestRatio > 1 + AIM3_EPS) {
+        return { ok: false, reason: "shot log does not match the run" };
+      }
+      hit = claim;
+      index = claim ? r.nearest : -1;
+    }
+    if (hit) {
+      st.hits++;
+      st.active.splice(index, 1);
+      st.active.push(aim3Draw(st.active, st.rnd, st.cfg));
+    } else {
+      st.misses++;
+    }
+    return { ok: true, hit };
+  }
+
+  const AIM3_TAPE_RE = /^(\d{1,5}[hm]\d{1,6},\d{1,6};)*$/;
+
+  function aim3Encode(shots) {
+    return shots.map((s) => s.dt + (s.hit ? "h" : "m") + s.yaw + "," + s.pitch + ";").join("");
+  }
+
+  function aim3Decode(tape) {
+    if (typeof tape !== "string" || tape.length > 24 * (AIM3_ROUNDS + AIM3_MAX_MISSES)) return null;
+    if (!AIM3_TAPE_RE.test(tape)) return null;
+    const shots = [];
+    const re = /(\d{1,5})([hm])(\d{1,6}),(\d{1,6});/g;
+    let m;
+    while ((m = re.exec(tape))) {
+      shots.push({ dt: +m[1], hit: m[2] === "h", yaw: +m[3], pitch: +m[4] });
+    }
+    return shots;
+  }
+
+  /* The clock is the sum of the gaps, first target to thirtieth kill, and every
+     miss buys a quarter second. Spraying the wall is slower than aiming at it. */
+  function aim3Replay(mode, seed, shots) {
+    if (!AIM3_MODES[mode]) return { ok: false, reason: "bad mode" };
+    if (!Array.isArray(shots) || shots.length > AIM3_ROUNDS + AIM3_MAX_MISSES) {
+      return { ok: false, reason: "bad shot log" };
+    }
+    const st = aim3New(mode, seed);
+    for (const s of shots) {
+      if (st.hits >= AIM3_ROUNDS) return { ok: false, reason: "the tape runs past the last target" };
+      if (s.dt < AIM3_MIN_GAP || s.dt > AIM3_MAX_GAP) return { ok: false, reason: "impossible shot timing" };
+      if (s.yaw >= AIM3_YAW_SPAN || s.pitch > 2 * AIM3_PITCH_OFFSET) {
+        return { ok: false, reason: "shot fired from an impossible angle" };
+      }
+      st.timeMs += s.dt;
+      const shot = aim3Apply(st, aim3Dir(s.yaw, s.pitch), s.hit);
+      if (!shot.ok) return { ok: false, reason: shot.reason };
+    }
+    if (st.hits < AIM3_ROUNDS) return { ok: false, reason: "that run never cleared every target" };
+    return {
+      ok: true,
+      timeMs: st.timeMs,
+      misses: st.misses,
+      acc: Math.round((AIM3_ROUNDS / (AIM3_ROUNDS + st.misses)) * 100),
+      avg: Math.round(st.timeMs / AIM3_ROUNDS),
+      score: st.timeMs + st.misses * AIM3_PENALTY,
+    };
+  }
+
+  /* ── end of the engine ── */
+
+/* Sensitivity never reaches this Worker. A run is the angles the page fired at,
+   so the referee turns each one back into a ray and fires it at the pool it
+   rebuilt from the seed. What the mouse had to do to get there is the player's
+   own business. The clock is still the browser's, held between a floor and a
+   ceiling per shot, and the score is computed here rather than accepted. */
+function verifyAim3d(body) {
+  const mode = typeof body.mode === "string" && AIM3_MODES[body.mode] ? body.mode : null;
+  if (!mode) return { ok: false, reason: "bad mode" };
+
+  const seed = Number(body.seed);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    return { ok: false, reason: "bad seed" };
+  }
+
+  const shots = aim3Decode(body.moves);
+  if (!shots) return { ok: false, reason: "bad shot log" };
+
+  const run = aim3Replay(mode, seed, shots);
+  if (!run.ok) return run;
+
+  return {
+    ok: true,
+    board: mode,
+    score: run.score,
+    detail: { ms: run.score, timeMs: run.timeMs, misses: run.misses, acc: run.acc, avg: run.avg, mode },
+  };
+}
+
 /* ═══════════════ plumbing ═══════════════ */
 
 const GAMES = {
@@ -1452,6 +1643,7 @@ const GAMES = {
   snake: verifySnake,
   pacman: verifyPacman,
   aim: verifyAim,
+  aim3d: verifyAim3d,
 };
 
 /* flowcode stores its rows in this database too, but it verifies them in its
