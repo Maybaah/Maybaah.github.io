@@ -517,26 +517,55 @@
       },
     },
 
+    /* The one board whose columns depend on which scenario is being looked at:
+       a minute of tracking has no kill count and a sprint has no clock. */
     aim3d: {
       label: "Aim 3D",
       path: "/aim3d/",
-      columns: ["Player", "Time", "Misses", "Acc", "When"],
-      row: (s) => [{ html: nameCell(s.name) }, { html: fmtTime(s.ms), num: true }, num(s.misses),
-                   { html: s.acc + "%", num: true }, when(s.at)],
+      columns(st) {
+        if (st.scenario === "track") return ["Player", "On target", "Hold", "When", ""];
+        if (st.scenario === "sprint") return ["Player", "Kills", "Misses", "Acc", "When", ""];
+        return ["Player", "Time", "Misses", "Acc", "When", ""];
+      },
+      row: (s) => {
+        /* the tape a run was verified from is kept for the shot scenarios, so
+           the row can offer to play it back */
+        const watch = {
+          html: s.hasTape && s.rid
+            ? '<button class="pill" data-replay="' + s.rid + '" data-name="' + esc(s.name) + '">watch</button>'
+            : "",
+        };
+        const who = { html: nameCell(s.name) };
+        if ((s.scenario || "grid") === "track") {
+          return [who, { html: fmtTime(s.onTargetMs), num: true }, { html: s.pct + "%", num: true }, when(s.at), watch];
+        }
+        if (s.scenario === "sprint") {
+          return [who, num(s.kills), num(s.misses), { html: s.acc + "%", num: true }, when(s.at), watch];
+        }
+        return [who, { html: fmtTime(s.ms), num: true }, num(s.misses),
+                { html: s.acc + "%", num: true }, when(s.at), watch];
+      },
       axes: [
+        { id: "scenario", label: "Scenario", options: [
+          { id: "grid", label: "30 kills" }, { id: "sprint", label: "60 seconds" }, { id: "track", label: "Tracking" }] },
         { id: "mode", label: "Targets", options: [
           { id: "easy", label: "Easy" }, { id: "medium", label: "Medium" }, { id: "hard", label: "Hard" }] },
         { id: "range", label: "Range", options: RANGE },
       ],
-      hint: "thirty spheres, your own sensitivity",
+      hint: "your own sensitivity, the referee's own rays",
       resolve(st) {
         const daily = st.range === "today";
+        /* grid keeps the bare mode it shipped with, so the runs already on
+           those boards stay where they are */
+        const base = st.scenario === "grid" ? st.mode : st.scenario + "-" + st.mode;
+        const what = st.scenario === "track" ? "tracking runs"
+          : st.scenario === "sprint" ? "minute runs" : "runs";
         return {
-          board: st.mode + (daily ? dailySuffix() : ""),
+          board: base + (daily ? dailySuffix() : ""),
           meta: daily
             ? "today's runs · " + utcDayKey(0) + " · resets at midnight UTC"
-            : "all-time board · one row per player, your fastest run counts",
-          empty: daily ? "No " + st.mode + " runs today yet." : "No verified " + st.mode + " runs yet.",
+            : "all-time board · one row per player, your best run counts",
+          empty: daily ? "No " + st.mode + " " + what + " today yet." : "No verified " + st.mode + " " + what + " yet.",
         };
       },
     },
@@ -663,8 +692,20 @@
       const hint = opts.selfLink === false
         ? def.hint
         : def.hint + ' → <a href="' + def.path + '" style="text-decoration:underline;">play</a>';
+      /* a board whose columns depend on the pills describes them as a function
+         of the state, rather than every board carrying every column */
+      const cols = typeof def.columns === "function" ? def.columns(state) : def.columns;
       top(opts.game, r.board).then((data) => {
-        tableEl.innerHTML = table(def.columns, data.entries.slice(0, limit).map(def.row), r.empty, hint);
+        tableEl.innerHTML = table(cols, data.entries.slice(0, limit).map(def.row), r.empty, hint);
+        /* a row that kept its tape can ask the game page to play it; the widget
+           only says which run, because it has no idea how to draw one */
+        tableEl.querySelectorAll("[data-replay]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            window.dispatchEvent(new CustomEvent("arcade:replay", {
+              detail: { game: opts.game, board: r.board, rid: Number(btn.dataset.replay), name: btn.dataset.name },
+            }));
+          });
+        });
       }).catch(() => { tableEl.innerHTML = offlineHtml; });
     }
 

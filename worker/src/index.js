@@ -23,10 +23,14 @@ const MAX_PER_IP_PER_DAY = 120;
 const TOP_N = 50;
 
 const TOP_QUERY =
-  `SELECT name, score, detail, created_at AS at
+  `SELECT rowid AS rid, name, score, detail, created_at AS at
      FROM scores WHERE game = ?1 AND board = ?2
     ORDER BY score ASC, created_at ASC
     LIMIT ?3`;
+
+const ROW_QUERY =
+  `SELECT rowid AS rid, name, score, detail, created_at AS at
+     FROM scores WHERE game = ?1 AND board = ?2 AND rowid = ?3`;
 
 /* ── shared PRNG: must match the games exactly ── */
 function mulberry32(a) {
@@ -1460,6 +1464,14 @@ function verifyAim(body) {
   const AIM3_MAX_GAP = 20000;
   const AIM3_PITCH_OFFSET = 90000;
   const AIM3_YAW_SPAN = 360000;
+  const AIM3_SPRINT_MS = 60000;
+  const AIM3_SPRINT_MAX_SHOTS = 600;
+  /* Tracking is sampled rather than shot, at a rate coarse enough to keep the
+     tape small and fine enough that a third of a tenth of a second is the worst
+     the clock can be wrong by. */
+  const AIM3_TICK_MS = 1000 / 30;
+  const AIM3_TRACK_TICKS = 1800;
+  const AIM3_MAX_TICK_TURN = 180000;
   /* The silhouette is where a sine's last bit can differ between two builds of
      the same engine, so a shot inside this sliver of the edge is taken as the
      page called it. It is a millionth of the radius: nothing to aim with. */
@@ -1470,6 +1482,22 @@ function verifyAim(body) {
     medium: { r: 0.35, spread: 4.0 },
     hard: { r: 0.22, spread: 5.0 },
   };
+
+  /* A tracked sphere is fatter and slower than a static one, because holding a
+     crosshair on a moving 22cm ball for a minute is not training, it is a joke. */
+  const AIM3_TRACK = {
+    easy: { r: 0.88, speed: 0.09 },
+    medium: { r: 0.56, speed: 0.12 },
+    hard: { r: 0.35, speed: 0.16 },
+  };
+
+  const AIM3_SCENARIOS = ["grid", "sprint", "track"];
+
+  /* Grid keeps the bare mode it shipped with, so the runs already standing on
+     those boards stay where they are. */
+  function aim3Board(scenario, mode) {
+    return scenario === "grid" ? mode : scenario + "-" + mode;
+  }
 
   function aim3Mulberry32(a) {
     return function () {
@@ -1563,7 +1591,7 @@ function verifyAim(body) {
   }
 
   function aim3Decode(tape) {
-    if (typeof tape !== "string" || tape.length > 24 * (AIM3_ROUNDS + AIM3_MAX_MISSES)) return null;
+    if (typeof tape !== "string" || tape.length > 24 * AIM3_SPRINT_MAX_SHOTS) return null;
     if (!AIM3_TAPE_RE.test(tape)) return null;
     const shots = [];
     const re = /(\d{1,5})([hm])(\d{1,6}),(\d{1,6});/g;
@@ -1574,32 +1602,139 @@ function verifyAim(body) {
     return shots;
   }
 
-  /* The clock is the sum of the gaps, first target to thirtieth kill, and every
-     miss buys a quarter second. Spraying the wall is slower than aiming at it. */
-  function aim3Replay(mode, seed, shots) {
+  /* Grid is ranked by the clock, first target to thirtieth kill, with a quarter
+     second for every miss. Sprint is ranked by kills in a fixed minute, ties
+     going to whoever wasted fewer shots getting them. */
+  function aim3Replay(scenario, mode, seed, shots) {
     if (!AIM3_MODES[mode]) return { ok: false, reason: "bad mode" };
-    if (!Array.isArray(shots) || shots.length > AIM3_ROUNDS + AIM3_MAX_MISSES) {
+    const sprint = scenario === "sprint";
+    if (!sprint && scenario !== "grid") return { ok: false, reason: "bad scenario" };
+    const maxShots = sprint ? AIM3_SPRINT_MAX_SHOTS : AIM3_ROUNDS + AIM3_MAX_MISSES;
+    if (!Array.isArray(shots) || shots.length > maxShots) {
       return { ok: false, reason: "bad shot log" };
     }
     const st = aim3New(mode, seed);
     for (const s of shots) {
-      if (st.hits >= AIM3_ROUNDS) return { ok: false, reason: "the tape runs past the last target" };
+      if (!sprint && st.hits >= AIM3_ROUNDS) return { ok: false, reason: "the tape runs past the last target" };
       if (s.dt < AIM3_MIN_GAP || s.dt > AIM3_MAX_GAP) return { ok: false, reason: "impossible shot timing" };
       if (s.yaw >= AIM3_YAW_SPAN || s.pitch > 2 * AIM3_PITCH_OFFSET) {
         return { ok: false, reason: "shot fired from an impossible angle" };
       }
       st.timeMs += s.dt;
+      if (sprint && st.timeMs > AIM3_SPRINT_MS) return { ok: false, reason: "that run ran past the minute" };
       const shot = aim3Apply(st, aim3Dir(s.yaw, s.pitch), s.hit);
       if (!shot.ok) return { ok: false, reason: shot.reason };
+      if (!sprint && st.misses > AIM3_MAX_MISSES) return { ok: false, reason: "too many misses" };
+    }
+    const acc = Math.round((st.hits / Math.max(1, st.hits + st.misses)) * 100);
+    if (sprint) {
+      if (st.hits < 1) return { ok: false, reason: "that run never hit anything" };
+      return {
+        ok: true,
+        timeMs: st.timeMs,
+        kills: st.hits,
+        misses: st.misses,
+        acc,
+        avg: Math.round(st.timeMs / st.hits),
+        score: -(st.hits * 1000) + st.misses,
+      };
     }
     if (st.hits < AIM3_ROUNDS) return { ok: false, reason: "that run never cleared every target" };
     return {
       ok: true,
       timeMs: st.timeMs,
+      kills: AIM3_ROUNDS,
       misses: st.misses,
-      acc: Math.round((AIM3_ROUNDS / (AIM3_ROUNDS + st.misses)) * 100),
+      acc,
       avg: Math.round(st.timeMs / AIM3_ROUNDS),
       score: st.timeMs + st.misses * AIM3_PENALTY,
+    };
+  }
+
+  /* ── tracking ──
+     One sphere, one minute, and the score is how long the crosshair was on it.
+     The path is drawn from the seed a tick at a time, so it is the same minute
+     for the page and for the referee. */
+
+  /* The path is the Worker's to choose, not the player's: a minute of tracking
+     rewards a lazy sphere, and a client that picks its own seed can go looking
+     for one. Everyone gets the same path on the same day instead. */
+  function aim3TrackSeed(day, mode) {
+    const salt = mode === "hard" ? 3 : mode === "medium" ? 2 : 1;
+    return (Math.imul(day, 2654435761) ^ Math.imul(salt, 40503)) >>> 0;
+  }
+
+  function aim3TrackNew(mode, seed) {
+    const cfg = AIM3_TRACK[mode];
+    const rnd = aim3Mulberry32(seed >>> 0);
+    return { cfg, rnd, x: 0, y: 0, vx: 0, vy: 0, hold: 0, r: cfg.r };
+  }
+
+  function aim3TrackStep(t) {
+    if (t.hold <= 0) {
+      const a = t.rnd() * Math.PI * 2;
+      const s = t.cfg.speed * (0.6 + 0.8 * t.rnd());
+      t.vx = Math.cos(a) * s;
+      /* flattened, because a sphere that climbs as readily as it strafes reads
+         as noise rather than as something dodging */
+      t.vy = Math.sin(a) * s * 0.55;
+      t.hold = 8 + Math.floor(t.rnd() * 22);
+    }
+    t.hold--;
+    t.x += t.vx;
+    t.y += t.vy;
+    if (t.x < -AIM3_HALF_W) { t.x = -AIM3_HALF_W; t.vx = -t.vx; }
+    if (t.x > AIM3_HALF_W) { t.x = AIM3_HALF_W; t.vx = -t.vx; }
+    if (t.y < -AIM3_HALF_H) { t.y = -AIM3_HALF_H; t.vy = -t.vy; }
+    if (t.y > AIM3_HALF_H) { t.y = AIM3_HALF_H; t.vy = -t.vy; }
+  }
+
+  function aim3TrackSphere(t) {
+    return { x: t.x, y: t.y, z: -AIM3_DIST, r: t.r };
+  }
+
+  const AIM3_TRACK_RE = /^(-?\d{1,6},-?\d{1,6};)*$/;
+
+  function aim3TrackEncode(samples) {
+    return samples.map((s) => s.dy + "," + s.dp + ";").join("");
+  }
+
+  function aim3TrackDecode(tape) {
+    if (typeof tape !== "string" || tape.length > 18 * AIM3_TRACK_TICKS) return null;
+    if (!AIM3_TRACK_RE.test(tape)) return null;
+    const out = [];
+    const re = /(-?\d{1,6}),(-?\d{1,6});/g;
+    let m;
+    while ((m = re.exec(tape))) out.push({ dy: +m[1], dp: +m[2] });
+    return out;
+  }
+
+  function aim3TrackReplay(mode, seed, samples) {
+    if (!AIM3_TRACK[mode]) return { ok: false, reason: "bad mode" };
+    if (!Array.isArray(samples) || samples.length !== AIM3_TRACK_TICKS) {
+      return { ok: false, reason: "a tracking run is exactly one minute" };
+    }
+    const t = aim3TrackNew(mode, seed);
+    let yaw = 0, pitch = AIM3_PITCH_OFFSET, on = 0;
+    for (const s of samples) {
+      if (s.dy > AIM3_MAX_TICK_TURN || s.dy < -AIM3_MAX_TICK_TURN ||
+          s.dp > AIM3_MAX_TICK_TURN || s.dp < -AIM3_MAX_TICK_TURN) {
+        return { ok: false, reason: "the view moved further than a view can" };
+      }
+      yaw = (((yaw + s.dy) % AIM3_YAW_SPAN) + AIM3_YAW_SPAN) % AIM3_YAW_SPAN;
+      pitch += s.dp;
+      if (pitch < 0 || pitch > 2 * AIM3_PITCH_OFFSET) {
+        return { ok: false, reason: "the view left the world" };
+      }
+      aim3TrackStep(t);
+      if (aim3Resolve([aim3TrackSphere(t)], aim3Dir(yaw, pitch)).struck >= 0) on++;
+    }
+    const onMs = Math.round(on * AIM3_TICK_MS);
+    return {
+      ok: true,
+      onTargetMs: onMs,
+      pct: Math.round((on / AIM3_TRACK_TICKS) * 100),
+      score: -onMs,
     };
   }
 
@@ -1610,10 +1745,39 @@ function verifyAim(body) {
    rebuilt from the seed. What the mouse had to do to get there is the player's
    own business. The clock is still the browser's, held between a floor and a
    ceiling per shot, and the score is computed here rather than accepted. */
+/* A tape short enough to sit in a row is kept, so the board can offer to play
+   the run back. A minute of tracking is eighteen hundred samples and is not
+   worth carrying in a leaderboard read, so only the shot scenarios keep one. */
+const AIM3_KEEP_TAPE = 4500;
+
 function verifyAim3d(body) {
   const mode = typeof body.mode === "string" && AIM3_MODES[body.mode] ? body.mode : null;
   if (!mode) return { ok: false, reason: "bad mode" };
 
+  const scenario = typeof body.scenario === "string" && AIM3_SCENARIOS.indexOf(body.scenario) !== -1
+    ? body.scenario
+    : "grid";
+
+  if (scenario === "track") {
+    /* the client's seed is ignored: the day, and so the path, is this Worker's
+       to decide, or a minute of tracking becomes a hunt for a lazy sphere */
+    const day = utcDayKey();
+    if (Number(body.day) !== day) {
+      return { ok: false, reason: "today's path has rolled over, reload the page" };
+    }
+    const samples = aim3TrackDecode(body.moves);
+    if (!samples) return { ok: false, reason: "bad tracking log" };
+    const run = aim3TrackReplay(mode, aim3TrackSeed(day, mode), samples);
+    if (!run.ok) return run;
+    return {
+      ok: true,
+      board: aim3Board(scenario, mode),
+      score: run.score,
+      detail: { onTargetMs: run.onTargetMs, pct: run.pct, mode, scenario },
+    };
+  }
+
+  /* only the shot scenarios carry a seed: a tracking path is this Worker's */
   const seed = Number(body.seed);
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
     return { ok: false, reason: "bad seed" };
@@ -1622,15 +1786,23 @@ function verifyAim3d(body) {
   const shots = aim3Decode(body.moves);
   if (!shots) return { ok: false, reason: "bad shot log" };
 
-  const run = aim3Replay(mode, seed, shots);
+  const run = aim3Replay(scenario, mode, seed, shots);
   if (!run.ok) return run;
 
-  return {
-    ok: true,
-    board: mode,
-    score: run.score,
-    detail: { ms: run.score, timeMs: run.timeMs, misses: run.misses, acc: run.acc, avg: run.avg, mode },
+  const detail = {
+    timeMs: run.timeMs,
+    misses: run.misses,
+    acc: run.acc,
+    avg: run.avg,
+    mode,
+    scenario,
+    seed,
   };
+  if (scenario === "sprint") detail.kills = run.kills;
+  else detail.ms = run.score;
+  if (body.moves.length <= AIM3_KEEP_TAPE) detail.tape = body.moves;
+
+  return { ok: true, board: aim3Board(scenario, mode), score: run.score, detail };
 }
 
 /* ═══════════════ plumbing ═══════════════ */
@@ -1697,11 +1869,16 @@ async function ipKey(ip, day, env) {
     .map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/* A stored tape is left out of the list: fifty of them would be most of the
+   response, and a page only ever wants the one run it is about to play. */
 function parseEntries(results) {
   return results.map((r) => {
     let detail = {};
     try { detail = JSON.parse(r.detail); } catch {}
-    return { name: r.name, score: r.score, at: r.at, ...detail };
+    const tape = detail.tape;
+    delete detail.tape;
+    delete detail.seed;
+    return { rid: r.rid, name: r.name, score: r.score, at: r.at, ...detail, hasTape: !!tape };
   });
 }
 
@@ -1719,6 +1896,32 @@ async function handleLeaderboard(req, env, origin) {
   const { results } = await env.DB.prepare(TOP_QUERY).bind(game, board, TOP_N).all();
   return json({ game, board, count: results.length, entries: parseEntries(results) }, 200, origin, {
     "Cache-Control": "public, max-age=10",
+  });
+}
+
+/* ── GET /api/replay?game=aim3d&board=easy&rid=561 ──
+   One row, with the tape it was verified from, so a game page can play the run
+   back. Nothing here is a secret: the tape is what the run was proved with. */
+async function handleReplay(req, env, origin) {
+  const url = new URL(req.url);
+  const game = url.searchParams.get("game") || "";
+  if (!GAMES[game] && !READ_ONLY_GAMES.includes(game)) {
+    return json({ error: "bad game" }, 400, origin);
+  }
+  const board = url.searchParams.get("board") || "";
+  if (!BOARD_RE.test(board)) return json({ error: "bad board" }, 400, origin);
+  const rid = Number(url.searchParams.get("rid"));
+  if (!Number.isInteger(rid) || rid < 1) return json({ error: "bad run" }, 400, origin);
+
+  const row = await env.DB.prepare(ROW_QUERY).bind(game, board, rid).first();
+  if (!row) return json({ error: "no such run" }, 404, origin);
+
+  let detail = {};
+  try { detail = JSON.parse(row.detail); } catch {}
+  if (!detail.tape) return json({ error: "that run kept no tape" }, 404, origin);
+
+  return json({ game, board, rid, name: row.name, score: row.score, at: row.at, ...detail }, 200, origin, {
+    "Cache-Control": "public, max-age=300",
   });
 }
 
@@ -1817,6 +2020,9 @@ export default {
     try {
       if (req.method === "GET" && pathname === "/api/leaderboard") {
         return await handleLeaderboard(req, env, origin);
+      }
+      if (req.method === "GET" && pathname === "/api/replay") {
+        return await handleReplay(req, env, origin);
       }
       if (req.method === "POST" && pathname === "/api/submit") {
         return await handleSubmit(req, env, origin);

@@ -75,7 +75,7 @@ plays the same board.
 | Snake | `classic` | `classic-<YYYYMMDD>`, plus `daily-<YYYYMMDD>` for seeded runs |
 | Pac-Man | `classic` | `classic-<YYYYMMDD>` |
 | Aim trainer | `easy` / `medium` / `hard` | `<mode>-<YYYYMMDD>` |
-| Aim 3D | `easy` / `medium` / `hard` | `<mode>-<YYYYMMDD>` |
+| Aim 3D | `<mode>` (30 kills), `sprint-<mode>`, `track-<mode>` | `<board>-<YYYYMMDD>` |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
 | Chess | `elo` | none |
