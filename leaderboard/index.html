@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>Arcade Leaderboards: Wordle, Minesweeper, Sudoku, 2048, Snake &amp; Pac-Man Global Best Scores | maybaah.github.io</title>
-  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, fastest Sudoku solves, best Wordle daily runs, top 2048 and Pac-Man scores, the Snake daily seed and flowcode's ranked typing boards. Every run is verified server-side." />
+  <meta name="description" content="Global leaderboards for every game in Maybaah's arcade: fastest Minesweeper clears per difficulty, fastest Sudoku solves, best Wordle daily runs, top 2048 and Pac-Man scores, fastest aim trainer runs, the Snake daily seed and flowcode's ranked typing boards. Every run is verified server-side." />
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/leaderboard/" />
@@ -42,7 +42,7 @@
     "@type": "WebPage",
     "name": "Arcade Leaderboards",
     "url": "https://maybaah.github.io/leaderboard/",
-    "description": "Global leaderboards for the mini-games on maybaah.github.io: Wordle, Minesweeper, Sudoku, 2048, Snake, Pac-Man, Chess and flowcode.",
+    "description": "Global leaderboards for the mini-games on maybaah.github.io: Wordle, Minesweeper, Sudoku, 2048, Snake, Pac-Man, Aim Trainer, Chess and flowcode.",
     "author": { "@type": "Person", "name": "Artem Kovtoniuk" }
   }
   </script>
@@ -98,6 +98,7 @@
       <button class="tab" role="tab" id="tab-2048" aria-selected="false">2048</button>
       <button class="tab" role="tab" id="tab-snake" aria-selected="false">Snake</button>
       <button class="tab" role="tab" id="tab-pacman" aria-selected="false">Pac-Man</button>
+      <button class="tab" role="tab" id="tab-aim" aria-selected="false">Aim</button>
       <button class="tab" role="tab" id="tab-chess" aria-selected="false">Chess</button>
       <button class="tab" role="tab" id="tab-flowcode" aria-selected="false">flowcode</button>
     </div>
@@ -110,6 +111,7 @@
     <div class="board-panel" id="panel-2048" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-snake" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-pacman" role="tabpanel" hidden></div>
+    <div class="board-panel" id="panel-aim" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-chess" role="tabpanel" hidden></div>
     <div class="board-panel" id="panel-flowcode" role="tabpanel" hidden></div>
 
@@ -144,7 +146,7 @@
        it comes back, so only the board being looked at costs a request. Refresh
        does the same thing on demand: it reloads the selected board with the
        pills it is currently set to, not all six. */
-    var tabs = ["wordle", "minesweeper", "sudoku", "2048", "snake", "pacman", "chess", "flowcode"];
+    var tabs = ["wordle", "minesweeper", "sudoku", "2048", "snake", "pacman", "aim", "chess", "flowcode"];
     var mounted = {};
     var active = null;
 

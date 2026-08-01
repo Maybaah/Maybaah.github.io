@@ -1297,6 +1297,151 @@ function verifyPacman(body) {
   };
 }
 
+/* ═══════════════ aim trainer ═══════════════ */
+
+/* ── the engine ──
+   Duplicated, byte for byte, from aim/game.js. Same rule as the pacman engine:
+   drift means the page counts a hit this referee scores as a miss, and every
+   submission stops verifying. */
+
+  const AIM_W = 900, AIM_H = 600;
+  const AIM_ROUNDS = 30;
+  const AIM_PENALTY = 250;
+  const AIM_MAX_MISSES = 200;
+  const AIM_MIN_GAP = 40;
+  const AIM_MAX_GAP = 20000;
+
+  const AIM_MODES = {
+    easy: { r: 58, spread: 2.2 },
+    medium: { r: 34, spread: 2.6 },
+    hard: { r: 19, spread: 3.2 },
+  };
+
+  function aimMulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* The whole round list is drawn up front from the seed. Each spot is pushed
+     a few radii off the one before it so no target ever appears under the
+     cursor that just cleared the last one, and the reject loop is bounded, so
+     both sides walk the generator the same number of times. */
+  function aimSpots(mode, seed) {
+    const cfg = AIM_MODES[mode];
+    const rnd = aimMulberry32(seed >>> 0);
+    const pad = cfg.r + 4;
+    const gap = Math.round(cfg.r * cfg.spread);
+    const spots = [];
+    for (let i = 0; i < AIM_ROUNDS; i++) {
+      const prev = spots[i - 1];
+      let x = 0, y = 0;
+      for (let t = 0; t < 24; t++) {
+        x = Math.round(pad + rnd() * (AIM_W - 2 * pad));
+        y = Math.round(pad + rnd() * (AIM_H - 2 * pad));
+        if (!prev) break;
+        const dx = x - prev.x, dy = y - prev.y;
+        if (dx * dx + dy * dy >= gap * gap) break;
+      }
+      spots.push({ x, y, r: cfg.r });
+    }
+    return spots;
+  }
+
+  /* Integers on both sides: the page tests the click it is about to write down,
+     not the pixel it was drawn at, so the two never disagree about an edge. */
+  function aimHit(spot, x, y) {
+    const dx = x - spot.x, dy = y - spot.y;
+    return dx * dx + dy * dy <= spot.r * spot.r;
+  }
+
+  /* Every field is variable width, so each click is closed with a semicolon:
+     without it a y of 456 followed by a gap of 400 reads as a y of 4564. */
+  const AIM_TAPE_RE = /^(\d{1,5}[hm]\d{1,4},\d{1,4};)*$/;
+
+  function aimEncode(clicks) {
+    return clicks.map((c) => c.dt + (c.hit ? "h" : "m") + c.x + "," + c.y + ";").join("");
+  }
+
+  function aimDecode(tape) {
+    if (typeof tape !== "string" || tape.length > 20 * (AIM_ROUNDS + AIM_MAX_MISSES)) return null;
+    if (!AIM_TAPE_RE.test(tape)) return null;
+    const clicks = [];
+    const re = /(\d{1,5})([hm])(\d{1,4}),(\d{1,4});/g;
+    let m;
+    while ((m = re.exec(tape))) {
+      clicks.push({ dt: +m[1], hit: m[2] === "h", x: +m[3], y: +m[4] });
+    }
+    return clicks;
+  }
+
+  /* The only score anyone keeps. Time is the sum of the gaps on the tape, which
+     is the clock from the first target to the last hit, and every miss buys a
+     quarter second, so spraying is slower than aiming. */
+  function aimReplay(mode, seed, clicks) {
+    if (!AIM_MODES[mode]) return { ok: false, reason: "bad mode" };
+    if (!Array.isArray(clicks) || clicks.length > AIM_ROUNDS + AIM_MAX_MISSES) {
+      return { ok: false, reason: "bad click log" };
+    }
+    const spots = aimSpots(mode, seed);
+    let round = 0, timeMs = 0, misses = 0;
+    for (const c of clicks) {
+      if (round >= AIM_ROUNDS) return { ok: false, reason: "the tape runs past the last target" };
+      if (c.dt < AIM_MIN_GAP || c.dt > AIM_MAX_GAP) return { ok: false, reason: "impossible click timing" };
+      if (c.x > AIM_W || c.y > AIM_H) return { ok: false, reason: "click landed outside the field" };
+      timeMs += c.dt;
+      const hit = aimHit(spots[round], c.x, c.y);
+      /* the page marks each click as it records it, so a mark the replay
+         disagrees with is a tape this engine could not have produced */
+      if (hit !== c.hit) return { ok: false, reason: "click log does not match the run" };
+      if (hit) round++;
+      else misses++;
+    }
+    if (round < AIM_ROUNDS) return { ok: false, reason: "that run never cleared every target" };
+    return {
+      ok: true,
+      timeMs,
+      misses,
+      acc: Math.round((AIM_ROUNDS / (AIM_ROUNDS + misses)) * 100),
+      /* the clock over the targets, so time spent missing is charged to the
+         target it was spent on rather than dropped */
+      avg: Math.round(timeMs / AIM_ROUNDS),
+      score: timeMs + misses * AIM_PENALTY,
+    };
+  }
+
+  /* ── end of the engine ── */
+
+/* The one thing a click game cannot replay away is the clock: the gaps on the
+   tape are the browser's own timestamps. The floor and the ceiling above are
+   the whole defence, and the score itself is still computed here rather than
+   taken from the client. */
+function verifyAim(body) {
+  const mode = typeof body.mode === "string" && AIM_MODES[body.mode] ? body.mode : null;
+  if (!mode) return { ok: false, reason: "bad mode" };
+
+  const seed = Number(body.seed);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    return { ok: false, reason: "bad seed" };
+  }
+
+  const clicks = aimDecode(body.moves);
+  if (!clicks) return { ok: false, reason: "bad click log" };
+
+  const run = aimReplay(mode, seed, clicks);
+  if (!run.ok) return run;
+
+  return {
+    ok: true,
+    board: mode,
+    score: run.score,
+    detail: { ms: run.score, timeMs: run.timeMs, misses: run.misses, acc: run.acc, avg: run.avg, mode },
+  };
+}
+
 /* ═══════════════ plumbing ═══════════════ */
 
 const GAMES = {
@@ -1306,6 +1451,7 @@ const GAMES = {
   "2048": verify2048,
   snake: verifySnake,
   pacman: verifyPacman,
+  aim: verifyAim,
 };
 
 /* flowcode stores its rows in this database too, but it verifies them in its

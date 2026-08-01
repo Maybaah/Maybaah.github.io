@@ -19,6 +19,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/2048/` | 2048: slide and merge to 2048 | [Maybaah/2048](https://github.com/Maybaah/2048) |
 | `/snake/` | Snake: classic + daily seed challenge | [Maybaah/snake](https://github.com/Maybaah/snake) |
 | `/pacman/` | Pac-Man: maze chase with the arcade ghost AI | [Maybaah/pacman](https://github.com/Maybaah/pacman) |
+| `/aim/` | Aim trainer: 30 targets, 3 sizes, misses cost time | [Maybaah/aim](https://github.com/Maybaah/aim) |
 | `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
 | `/chess/` | Chess: 1v1 rooms + pass and play | [Maybaah/chess](https://github.com/Maybaah/chess) |
 | `/codenames/` | Codenames: team lobbies, English and Russian decks | [Maybaah/codenames](https://github.com/Maybaah/codenames) |
@@ -32,9 +33,12 @@ leaderboard backend. Adding a cabinet: [`NEW-GAME.md`](NEW-GAME.md).
 
 Same architecture as flowcode: a Cloudflare Worker + D1 ([`worker/`](worker/))
 that never trusts a submitted score. A Wordle run is checked against the day's
-real answer; Minesweeper, Sudoku, 2048, Snake and Pac-Man runs ship a seed and a move
-log, and the Worker rebuilds the board and replays the whole game before
-anything lands on a board. One row per player per board: your best run counts.
+real answer; Minesweeper, Sudoku, 2048, Snake, Pac-Man and Aim trainer runs ship a
+seed and a move log, and the Worker rebuilds the board and replays the whole game
+before anything lands on a board. One row per player per board: your best run
+counts. The aim trainer is the one game whose clock the Worker cannot rebuild,
+only bound: the gaps between clicks are the browser's own timestamps, so it holds
+a floor and a ceiling over them and still computes the score itself.
 
 Every game stores its rows in the one `arcade` database, in the same `scores`
 table keyed `(game, board, player)`. flowcode is the exception in one respect
@@ -66,6 +70,7 @@ plays the same board.
 | 2048 | `classic` | `classic-<YYYYMMDD>` |
 | Snake | `classic` | `classic-<YYYYMMDD>`, plus `daily-<YYYYMMDD>` for seeded runs |
 | Pac-Man | `classic` | `classic-<YYYYMMDD>` |
+| Aim trainer | `easy` / `medium` / `hard` | `<mode>-<YYYYMMDD>` |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
 | Chess | `elo` | none |
