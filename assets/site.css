@@ -408,6 +408,200 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
 .game-card.soon { border-style: dashed; opacity: 0.75; }
 .game-card.soon:hover { background: var(--bg-surface); }
 
+/* ── the cabinet shell ──
+   Every game page is the same frame: a centred column, a head carrying the
+   cabinet number and its mode pills, a row of counters, the board, and a
+   toolbar under it. This lived in twelve <style> blocks and drifted, so a
+   cabinet now sets --wrap for how wide its board wants to be and inherits the
+   rest. */
+.game-wrap {
+  --wrap: 520px;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+.game-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+.game-head h1 { font-size: 28px; margin-top: 6px; }
+
+/* Pills that pick a variant. Inside the head they sit beside the title; a
+   cabinet with too many of them to fit puts the group under the head instead
+   and picks up the gap from the sibling rule. */
+.mode-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.game-head + .mode-pills { margin-top: 18px; }
+
+/* Counters, in the two shapes a cabinet uses: boxed totals beside the title,
+   or a mono strip under it with the toggles pushed to the right by .spacer. */
+.score-row { display: flex; gap: 10px; }
+.score-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  text-align: center;
+  min-width: var(--score-w, 88px);
+}
+.score-box label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+.score-box span { font-family: var(--font-mono); font-size: 20px; font-weight: 600; }
+
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+/* Numbers are right aligned in a tabular figure so a ticking clock does not
+   shuffle the row sideways; the width of each slot is the cabinet's business. */
+.hud b {
+  display: inline-block;
+  text-align: right;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.hud .spacer { flex: 1; }
+
+.statusline {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.statusline b { color: var(--text-secondary); font-weight: 500; }
+/* A refereed game says one sentence here rather than a row of counters. */
+.statusline.solo {
+  display: block;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-height: 18px;
+}
+.statusline.solo.warn { color: var(--warning); }
+
+/* The row under the board: the cabinet's own actions first, then Arcade and
+   Leaderboard last, in that order on every page. */
+.toolbar { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+
+/* Name the run, then submit it. Hidden until a run finishes, and shown by each
+   game.js setting display, so the base state stays none here. */
+.submit-run {
+  display: none;
+  margin-top: 20px;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.submit-run input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 7px 12px;
+  width: 150px;
+}
+.submit-run .run-status { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+
+/* ── the room panel ──
+   Create-or-join, the share link and the hint under them, shared by every
+   cabinet that seats two people in a room. */
+.lobby {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+}
+.lobby-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lobby input {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 7px 12px;
+}
+.lobby label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+.lobby .hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+#join-code { letter-spacing: 0.24em; text-transform: uppercase; width: 110px; }
+.share { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+.share code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 10px;
+  overflow-wrap: anywhere;
+}
+
+/* ── the touch pad ──
+   One d-pad for every cabinet that needs one, shown only where there is no
+   keyboard to reach for. */
+.touch-controls { display: none; margin-top: 20px; align-items: center; justify-content: center; gap: 24px; }
+.dpad {
+  display: none;
+  grid-template-columns: repeat(3, 48px);
+  grid-template-rows: repeat(3, 48px);
+  gap: 6px;
+  width: max-content;
+  margin-inline: auto;
+}
+.dpad button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.dpad button:active { background: var(--bg-elevated); color: var(--text-primary); }
+.dpad .spacer { visibility: hidden; }
+@media (hover: none) and (pointer: coarse) {
+  .touch-controls { display: flex; }
+  .dpad { display: grid; }
+}
+
 /* ── tables / leaderboard ── */
 .board-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .board-table th {

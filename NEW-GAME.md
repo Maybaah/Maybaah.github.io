@@ -37,6 +37,34 @@ Use the existing classes: `.btn`/`.btn-primary`/`.btn-secondary`/`.btn-sm`,
 tokens only (`var(--bg-surface)`, `var(--text-secondary)`, …), Geist + Geist
 Mono, 1px borders, no drop shadows. No em dashes anywhere in the copy.
 
+**The cabinet shell is shared too.** `site.css` owns the whole frame, so the
+page's own `<style>` block is only its board. Do not redefine any of these:
+
+| Class | What it is |
+| :-- | :-- |
+| `.game-wrap` | the centred column; set `--wrap` for its width, nothing else |
+| `.game-head` | cabinet number and `<h1>` on the left, pills or scores right |
+| `.mode-pills` + `.pill` | the group that picks a variant; under the head it gets its own gap |
+| `.score-row` / `.score-box` | boxed totals beside the title; `--score-w` sets the slot |
+| `.hud` | mono counter strip, with `.spacer` pushing the toggles right |
+| `.statusline` | the counter row under the board; `.solo` for a one-line status |
+| `.toolbar` | the row of buttons under everything |
+| `.submit-run` | name input, Submit run, status; hidden until a run ends |
+| `.lobby` / `.share` | create-or-join panel, for a game with a room |
+| `.dpad` / `.touch-controls` | the arrow pad, shown only where there is no keyboard |
+| `.board-embed` | the section `Arcade.mountBoard()` fills |
+
+**Every page ends the same way**: the board, then `.submit-run`, then a
+`.toolbar` whose last two entries are `Arcade` and `Leaderboard`, in that order,
+then `.board-embed`, then the paragraph of prose. A cabinet's own buttons come
+first in the toolbar; the run's primary action lives on the overlay or in the
+HUD, so the toolbar is all `.btn-secondary` unless nothing else on the page is
+primary.
+
+The nav is `← Arcade` and `Leaderboard`; arcade.js adds the coin chip. The
+footer is `home`, `arcade`, `leaderboard`, `source`, and `source` points at the
+game's own repo.
+
 **Never trust the client.** The browser submits *evidence*, never a score: a
 seed plus the move log. The Worker rebuilds the run and computes the score
 itself. A game whose score arrives as a number is not finished.
