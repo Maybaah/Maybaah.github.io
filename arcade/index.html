@@ -238,14 +238,18 @@
       <article class="game-card fade-up" style="--d:2;">
         <header>
           <h3>Wordle</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-wordle">Stats</button>
+            <div class="hovercard-panel" id="pop-wordle" role="tooltip">
+              <dl>
+                <dt>Daily</dt><dd id="st-daily">#…</dd>
+                <dt>Your best</dt><dd id="st-wordle">no runs yet</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Guess the five-letter word in six tries. One daily puzzle
           for everyone, unlimited practice runs.</p>
-        <div class="game-stats">
-          <span>daily · <b id="st-daily">#…</b></span>
-          <span>your best · <b id="st-wordle">no runs yet</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/wordle/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/wordle">Source&nbsp;↗</a>
@@ -255,15 +259,19 @@
       <article class="game-card fade-up" style="--d:3;">
         <header>
           <h3>Minesweeper</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-minesweeper">Stats</button>
+            <div class="hovercard-panel" id="pop-minesweeper" role="tooltip">
+              <dl>
+                <dt>Beginner</dt><dd id="st-mines-b">none</dd>
+                <dt>Intermediate</dt><dd id="st-mines-i">none</dd>
+                <dt>Expert</dt><dd id="st-mines-e">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">The classic. Three difficulties, right-click flags,
           chording, first click always safe.</p>
-        <div class="game-stats">
-          <span>beginner · <b id="st-mines-b">none</b></span>
-          <span>intermediate · <b id="st-mines-i">none</b></span>
-          <span>expert · <b id="st-mines-e">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/minesweeper/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/minesweeper">Source&nbsp;↗</a>
@@ -273,14 +281,18 @@
       <article class="game-card fade-up" style="--d:4;">
         <header>
           <h3>flowcode</h3>
-          <span class="badge"><span class="dot"></span>Ranked</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-flowcode">Details</button>
+            <div class="hovercard-panel" id="pop-flowcode" role="tooltip">
+              <dl>
+                <dt>Boards</dt><dd>global, in-game</dd>
+                <dt>Flow</dt><dd>20-200 wpm</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">3D typing trainer: words fly at you in cubes toward a red
           horizon. Seven modes, coins, and its own global ranked boards.</p>
-        <div class="game-stats">
-          <span>boards · <b>global, in-game</b></span>
-          <span>flow · <b>20-200 wpm</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/flowcode/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/flowcode">Source&nbsp;↗</a>
@@ -290,14 +302,18 @@
       <article class="game-card fade-up" style="--d:5;">
         <header>
           <h3>2048</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-2048">Stats</button>
+            <div class="hovercard-panel" id="pop-2048" role="tooltip">
+              <dl>
+                <dt>Your best</dt><dd id="st-2048">no runs yet</dd>
+                <dt>Top tile</dt><dd id="st-2048-tile">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Slide the tiles, merge matching numbers, chase 2048 and
           keep going. Arrows, WASD or swipe.</p>
-        <div class="game-stats">
-          <span>your best · <b id="st-2048">no runs yet</b></span>
-          <span>top tile · <b id="st-2048-tile">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/2048/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/2048">Source&nbsp;↗</a>
@@ -307,14 +323,18 @@
       <article class="game-card fade-up" style="--d:6;">
         <header>
           <h3>Snake</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-snake">Stats</button>
+            <div class="hovercard-panel" id="pop-snake" role="tooltip">
+              <dl>
+                <dt>Your best</dt><dd id="st-snake">no runs yet</dd>
+                <dt>Longest</dt><dd id="st-snake-len">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Eat apples, grow long, do not clip the wall or your own
           tail. Daily seed puts everyone on the same apples.</p>
-        <div class="game-stats">
-          <span>your best · <b id="st-snake">no runs yet</b></span>
-          <span>longest · <b id="st-snake-len">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/snake/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/snake">Source&nbsp;↗</a>
@@ -324,14 +344,18 @@
       <article class="game-card fade-up" style="--d:7;">
         <header>
           <h3>Tic Tac Toe</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-tictactoe">Details</button>
+            <div class="hovercard-panel" id="pop-tictactoe" role="tooltip">
+              <dl>
+                <dt>Modes</dt><dd>1v1 and bot</dd>
+                <dt>Board</dt><dd>refereed</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Three in a row. Share a link to play a friend in real
           time, or take on a bot that never loses.</p>
-        <div class="game-stats">
-          <span>modes · <b>1v1 and bot</b></span>
-          <span>board · <b>refereed</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/tictactoe/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/tictactoe">Source&nbsp;↗</a>
@@ -341,14 +365,18 @@
       <article class="game-card fade-up" style="--d:8;">
         <header>
           <h3>Chess</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-chess">Details</button>
+            <div class="hovercard-panel" id="pop-chess" role="tooltip">
+              <dl>
+                <dt>Modes</dt><dd>1v1 and local</dd>
+                <dt>Board</dt><dd>refereed</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">The whole rulebook, castling and en passant included.
           Share a link to play a friend, or pass one device back and forth.</p>
-        <div class="game-stats">
-          <span>modes · <b>1v1 and local</b></span>
-          <span>board · <b>refereed</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/chess/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/chess">Source&nbsp;↗</a>
@@ -358,15 +386,19 @@
       <article class="game-card fade-up" style="--d:9;">
         <header>
           <h3>Sudoku</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-sudoku">Stats</button>
+            <div class="hovercard-panel" id="pop-sudoku" role="tooltip">
+              <dl>
+                <dt>Easy</dt><dd id="st-sudoku-e">none</dd>
+                <dt>Medium</dt><dd id="st-sudoku-m">none</dd>
+                <dt>Hard</dt><dd id="st-sudoku-h">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Three difficulties, pencil marks and a grid that always
           has exactly one answer, so no solve ever needs a guess.</p>
-        <div class="game-stats">
-          <span>easy · <b id="st-sudoku-e">none</b></span>
-          <span>medium · <b id="st-sudoku-m">none</b></span>
-          <span>hard · <b id="st-sudoku-h">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/sudoku/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/sudoku">Source&nbsp;↗</a>
@@ -376,14 +408,18 @@
       <article class="game-card fade-up" style="--d:10;">
         <header>
           <h3>Codenames</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-codenames">Details</button>
+            <div class="hovercard-panel" id="pop-codenames" role="tooltip">
+              <dl>
+                <dt>Players</dt><dd>4 and up</dd>
+                <dt>Board</dt><dd>refereed</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Two teams, twenty five words, one word clues. Create a
           lobby and send the link. English and Russian decks.</p>
-        <div class="game-stats">
-          <span>players · <b>4 and up</b></span>
-          <span>board · <b>refereed</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/codenames/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/codenames">Source&nbsp;↗</a>
@@ -393,14 +429,18 @@
       <article class="game-card fade-up" style="--d:11;">
         <header>
           <h3>Pac-Man</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-pacman">Stats</button>
+            <div class="hovercard-panel" id="pop-pacman" role="tooltip">
+              <dl>
+                <dt>Your best</dt><dd id="st-pacman">no runs yet</dd>
+                <dt>Level</dt><dd id="st-pacman-level">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Clear the maze while four ghosts hunt you, each by its
           own rule. Power pellets turn the tables for a few seconds.</p>
-        <div class="game-stats">
-          <span>your best · <b id="st-pacman">no runs yet</b></span>
-          <span>level · <b id="st-pacman-level">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/pacman/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/pacman">Source&nbsp;↗</a>
@@ -410,15 +450,19 @@
       <article class="game-card fade-up" style="--d:12;">
         <header>
           <h3>Aim Trainer</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-aim">Stats</button>
+            <div class="hovercard-panel" id="pop-aim" role="tooltip">
+              <dl>
+                <dt>Easy</dt><dd id="st-aim-e">none</dd>
+                <dt>Medium</dt><dd id="st-aim-m">none</dd>
+                <dt>Hard</dt><dd id="st-aim-h">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Thirty targets, one at a time, as fast as you can click
           them. Three sizes, and every miss costs you a quarter second.</p>
-        <div class="game-stats">
-          <span>easy · <b id="st-aim-e">none</b></span>
-          <span>medium · <b id="st-aim-m">none</b></span>
-          <span>hard · <b id="st-aim-h">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/aim/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/aim">Source&nbsp;↗</a>
@@ -428,16 +472,20 @@
       <article class="game-card fade-up" style="--d:13;">
         <header>
           <h3>Aim 3D</h3>
-          <span class="badge"><span class="dot"></span>Online</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-aim3d">Stats</button>
+            <div class="hovercard-panel" id="pop-aim3d" role="tooltip">
+              <dl>
+                <dt>Easy</dt><dd id="st-aim3d-e">none</dd>
+                <dt>Medium</dt><dd id="st-aim3d-m">none</dd>
+                <dt>Hard</dt><dd id="st-aim3d-h">none</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">The same drill in first person: the mouse turns a camera
           at your own sensitivity. Thirty kills, a minute of them, or a minute
           of tracking one that runs.</p>
-        <div class="game-stats">
-          <span>easy · <b id="st-aim3d-e">none</b></span>
-          <span>medium · <b id="st-aim3d-m">none</b></span>
-          <span>hard · <b id="st-aim3d-h">none</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-primary btn-sm" href="/aim3d/">Play</a>
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/aim3d">Source&nbsp;↗</a>
@@ -447,13 +495,17 @@
       <article class="game-card soon fade-up" style="--d:14;" aria-label="Coming soon">
         <header>
           <h3>Cabinet 13</h3>
-          <span class="badge"><span class="dot off"></span>Soon</span>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-c12">Soon</button>
+            <div class="hovercard-panel" id="pop-c12" role="tooltip">
+              <dl>
+                <dt>Status</dt><dd>wiring the CRT</dd>
+              </dl>
+            </div>
+          </div>
         </header>
         <p class="desc">Under construction. Tetris? Solitaire? Breakout? Vote by
           opening an issue on the repo.</p>
-        <div class="game-stats">
-          <span>status · <b>wiring the CRT</b></span>
-        </div>
         <div class="actions">
           <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/Maybaah.github.io/issues">Suggest a game&nbsp;↗</a>
         </div>

@@ -485,18 +485,85 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
 .game-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .game-card h3 { font-size: 18px; }
 .game-card .desc { color: var(--text-secondary); font-size: 14px; flex: 1; }
-.game-stats {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 12px;
+/* ── hover card ──
+   A card's numbers are the least of what it has to say and they were sitting
+   in the middle of every one of them. They live in here now, opened by the
+   trigger in the action row.
+
+   On hover and on focus, not hover alone: a hover-only panel is unreachable
+   by keyboard and does not exist on a phone. :focus-within covers both, since
+   tapping the trigger focuses it, and that is also why this needs no script.
+   The panel is inert rather than absent between times, so the ids inside it
+   stay findable by the page's own getElementById. */
+.hovercard { position: relative; display: inline-flex; flex: none; }
+/* The trigger takes the slot the status badge used to hold, so it is the badge
+   shape with the manners of a button: the old one was a green dot reporting a
+   liveness nothing measured, and it read the same on eleven of thirteen cards. */
+.badge-trigger {
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
 }
-.game-stats b { color: var(--text-secondary); font-weight: 500; }
-.game-card .actions { display: flex; gap: 8px; }
+.badge-trigger::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-1px) rotate(45deg);
+  transition: transform 150ms ease;
+}
+.hovercard:hover .badge-trigger,
+.hovercard:focus-within .badge-trigger {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+  background: var(--bg-elevated);
+}
+.hovercard:hover .badge-trigger::after,
+.hovercard:focus-within .badge-trigger::after { transform: translateY(-3px) rotate(225deg); }
+
+/* Opens downward: the trigger sits in the card's head, and a panel above it
+   would hang over the card in the row before. */
+.hovercard-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  min-width: 208px;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 130ms ease, transform 130ms ease, visibility 130ms;
+}
+.hovercard:hover .hovercard-panel,
+.hovercard:focus-within .hovercard-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+/* The label is words, so it is set in the sans face; the value is a number,
+   which is the only thing the mono face is for, and tabular figures keep a
+   column of times from stepping about. */
+.hovercard-panel dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 18px;
+  font-size: 12px;
+}
+.hovercard-panel dt { color: var(--text-secondary); white-space: nowrap; }
+.hovercard-panel dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.game-card .actions { display: flex; gap: 8px; align-items: center; }
 .game-card.soon { border-style: dashed; opacity: 0.75; }
 .game-card.soon:hover { background: var(--bg-surface); }
 
