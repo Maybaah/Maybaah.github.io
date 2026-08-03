@@ -9,7 +9,7 @@
   <meta name="author" content="Artem Kovtoniuk" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
   <link rel="canonical" href="https://maybaah.github.io/" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#09090b" />
 
   <!-- Google Search Console -->
   <meta name="google-site-verification" content="N1M-m4WjE8AOS7bfMLymKI0LDLnHrPKOGjiKD5J1x_w" />
@@ -38,7 +38,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="/assets/site.css" />
 
@@ -89,12 +89,12 @@
 
 <main>
   <!-- HERO -->
-  <header class="section container" style="padding-top: 96px;">
+  <header class="section container" style="padding-top: 88px;">
     <p class="eyebrow fade-up" style="--d:0;">Artem Kovtoniuk · Software Developer</p>
     <h1 class="fade-up" style="--d:1; margin-top: 16px; max-width: 15ch;">I build backends, bots &amp; automation.</h1>
     <p class="lead fade-up" style="--d:2; margin-top: 24px; max-width: 56ch;">
       Backend and web development with Node.js, TypeScript, Python and Laravel:
-      automation, scraping, CI/CD.
+      automation, scraping, CI/CD. The arcade is where I test the rest.
     </p>
     <div class="fade-up" style="--d:3; margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
       <a class="btn btn-primary" href="/#contact">Get in touch</a>
@@ -102,14 +102,63 @@
     </div>
   </header>
 
+  <!-- ARCADE -->
+  <section class="section container" id="arcade">
+    <div class="card flush fade-up" style="--d:4;">
+      <div class="card-header">
+        <h2 class="card-title">Arcade</h2>
+        <p class="card-description">Twelve browser games, no ads and no sign-up.
+          Every score is replayed on a Worker before it reaches a board.</p>
+        <span class="card-action"><a class="btn btn-secondary btn-sm" href="/arcade/">Browse all</a></span>
+      </div>
+      <div class="row-list">
+        <a class="row" href="/wordle/">
+          <span class="row-title">Wordle</span>
+          <span class="row-desc">Five letters, six tries. One puzzle a day for everyone.</span>
+          <span class="row-meta">daily</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="row" href="/chess/">
+          <span class="row-title">Chess</span>
+          <span class="row-desc">Full rules, refereed server side. Share a link and play live.</span>
+          <span class="row-meta">1v1 live</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="row" href="/aim3d/">
+          <span class="row-title">Aim 3D</span>
+          <span class="row-desc">Pointer lock gridshot at your own sensitivity. Thirty spheres.</span>
+          <span class="row-meta">newest</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+      <div class="card-footer">
+        <span>Nine more, plus global boards and a coin shop.</span>
+        <a class="btn btn-ghost btn-sm" href="/leaderboard/" style="margin-left: auto;">Leaderboard</a>
+      </div>
+    </div>
+  </section>
+
   <!-- CONTACT -->
   <section class="section container" id="contact">
-    <p class="eyebrow">Contact</p>
-    <h2 style="margin-top: 12px;">Reach out</h2>
-    <div class="card" style="margin-top: 24px; display: grid; gap: 12px; font-family: var(--font-mono); font-size: 14px;">
-      <span><span style="color: var(--text-muted);">email&nbsp;&nbsp;&nbsp;&nbsp;</span><a href="mailto:artemcovtonyk2909@gmail.com" style="color: var(--text-primary);">artemcovtonyk2909@gmail.com</a></span>
-      <span><span style="color: var(--text-muted);">github&nbsp;&nbsp;&nbsp;</span><a href="https://github.com/Maybaah" style="color: var(--text-primary);">github.com/Maybaah</a></span>
-      <span><span style="color: var(--text-muted);">telegram&nbsp;</span><a href="https://t.me/maybob" style="color: var(--text-primary);">@maybob</a></span>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Contact</h2>
+        <p class="card-description">Open to backend and automation work.</p>
+      </div>
+      <dl class="field-list" style="margin-top: 20px;">
+        <div class="field">
+          <dt>Email</dt>
+          <dd><a href="mailto:artemcovtonyk2909@gmail.com">artemcovtonyk2909@gmail.com</a></dd>
+        </div>
+        <div class="field">
+          <dt>GitHub</dt>
+          <dd><a href="https://github.com/Maybaah" rel="me">github.com/Maybaah</a></dd>
+        </div>
+        <div class="field">
+          <dt>Telegram</dt>
+          <dd><a href="https://t.me/maybob" rel="me">@maybob</a></dd>
+        </div>
+      </dl>
     </div>
   </section>
 </main>

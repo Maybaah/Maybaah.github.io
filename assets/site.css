@@ -3,37 +3,49 @@
    Minimal. Confident. Dark-first. No noise.
    ───────────────────────────────────────────── */
 
+/* The default grey ramp is shadcn's zinc scale, written as hex because every
+   other token in this file is. Lightness steps are theirs: 0.141 base, 0.21
+   surface, 0.274 elevated, 0.552 muted text, 0.705 secondary text, 0.92 accent.
+   Borders are white at low alpha rather than a fixed grey, so a line stays
+   visible whichever surface it lands on. */
 :root {
   color-scheme: dark;
 
-  --bg-base: #0a0a0a;
-  --bg-surface: #111111;
-  --bg-elevated: #1a1a1a;
-  --bg-overlay: #222222;
+  --bg-base: #09090b;
+  --bg-surface: #18181b;
+  --bg-elevated: #27272a;
+  --bg-overlay: #3f3f46;
 
-  --border: #2a2a2a;
-  --border-subtle: #1e1e1e;
-  --border-focus: rgba(255, 255, 255, 0.13);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-focus: rgba(255, 255, 255, 0.18);
 
-  --text-primary: #f0f0f0;
-  --text-secondary: #888888;
-  --text-muted: #555555;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  /* ornament only: this measures 4.12:1 on the base, under AA, so nothing
+     a reader reads may use it. Reading text takes --text-secondary. */
+  --text-muted: #71717a;
 
-  --accent: #e8e8e8;
-  --accent-hover: #ffffff;
-  --accent-ink: #0a0a0a;
-  --danger: #ef4444;
-  --success: #22c55e;
-  --warning: #f59e0b;
+  --accent: #e4e4e7;
+  --accent-hover: #fafafa;
+  --accent-ink: #18181b;
+  --danger: #fb6a69;
+  --success: #4ade80;
+  --warning: #fbbf24;
 
-  --nav-bg: rgba(10, 10, 10, 0.85);
+  --nav-bg: rgba(9, 9, 11, 0.85);
 
   --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
 
-  --radius: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius: 10px;
+  --radius-lg: 14px;
   --container: 1040px;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.34), 0 1px 2px -1px rgba(0, 0, 0, 0.34);
 }
 
 /* ── themes ──────────────────────────────────────────────────────────────
@@ -132,6 +144,34 @@
   --success: #15803d;
   --warning: #b45309;
   --nav-bg: rgba(246, 245, 242, 0.85);
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.10), 0 1px 2px -1px rgba(0, 0, 0, 0.10);
+}
+
+/* ── shadcn names ──────────────────────────────────────────────────────────
+   The same tokens under the names shadcn/ui uses, so component CSS lifted from
+   there drops in unchanged. These are aliases, not a second palette: var()
+   resolves on <html>, which is also where data-theme lands, so a theme that
+   moves --bg-surface moves --card with it and nothing here needs repeating per
+   theme. Note --accent is ours (the bright primary fill) and theirs is a muted
+   hover surface, so their name for ours is --primary. */
+:root {
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-ink);
+  --secondary: var(--bg-elevated);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--bg-elevated);
+  --muted-foreground: var(--text-secondary);
+  --destructive: var(--danger);
+  --input: var(--border-focus);
+  --ring: var(--text-muted);
 }
 
 /* ── reset ── */
@@ -157,9 +197,9 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 :focus-visible {
   outline: 2px solid var(--accent-hover);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
-::selection { background: #333; color: #fff; }
+::selection { background: var(--bg-overlay); color: var(--text-primary); }
 
 /* ── layout ── */
 .container {
@@ -210,7 +250,7 @@ h3 { font-size: 16px; font-weight: 600; }
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-.wordmark .tld { color: var(--text-muted); font-weight: 400; }
+.wordmark .tld { color: var(--text-secondary); font-weight: 400; }
 .wordmark { flex: none; }
 /* The row scrolls rather than the page: a narrow phone with the coin chip and
    four links in the nav used to push the whole document sideways. */
@@ -230,7 +270,7 @@ h3 { font-size: 16px; font-weight: 600; }
   font-weight: 500;
   color: var(--text-secondary);
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: color 150ms ease, background 150ms ease;
 }
 .nav-links a:hover { color: var(--text-primary); background: var(--bg-elevated); }
@@ -299,6 +339,8 @@ h3 { font-size: 16px; font-weight: 600; }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-secondary { border-color: var(--border); color: var(--text-primary); }
 .btn-secondary:hover { border-color: var(--border-focus); background: var(--bg-elevated); }
+.btn-ghost { color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--bg-elevated); color: var(--text-primary); }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btn-secondary:disabled:hover { border-color: var(--border); background: none; }
@@ -327,39 +369,89 @@ h3 { font-size: 16px; font-weight: 600; }
 }
 .badge .dot.off { background: var(--text-muted); }
 .badge .dot.warn { background: var(--warning); }
+.badge-secondary { background: var(--bg-elevated); border-color: transparent; color: var(--text-primary); }
 
-/* ── cards ── */
+/* ── separator ── */
+.separator { height: 1px; border: 0; margin: 0; background: var(--border-subtle); }
+
+/* ── cards ──
+   Header, content and footer are separate slots so a card can hold prose or a
+   list of rows without either one guessing at the other's padding. .flush
+   hands the padding to the slots, which is what lets a row reach the edge and
+   still light up across the whole card on hover. */
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
+  box-shadow: var(--shadow-xs);
+}
+.card-header { display: grid; grid-template-columns: 1fr; gap: 6px; align-items: start; }
+.card-header:has(.card-action) { grid-template-columns: 1fr auto; }
+.card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.card-description { color: var(--text-secondary); font-size: 14px; }
+.card-action { grid-column: 2; grid-row: 1 / span 2; justify-self: end; align-self: start; }
+.card-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.card.flush { padding: 0; }
+.card.flush > .card-header { padding: 22px 22px 18px; }
+.card.flush > .card-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
-/* ── work list (index) ── */
-.work-list { display: flex; flex-direction: column; border-top: 1px solid var(--border-subtle); }
-.work-row {
+/* ── row list ── */
+.row-list { display: flex; flex-direction: column; border-top: 1px solid var(--border-subtle); }
+.row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px 24px;
-  padding: 20px 8px;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 2px 16px;
+  padding: 14px 22px;
   border-bottom: 1px solid var(--border-subtle);
-  border-radius: 0;
   transition: background 150ms ease;
-  align-items: baseline;
 }
-a.work-row:hover { background: var(--bg-surface); }
-.work-row h3 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.work-row p { color: var(--text-secondary); font-size: 14px; grid-column: 1; }
-.work-tech {
+.row:last-child { border-bottom: 0; }
+a.row:hover { background: var(--bg-elevated); }
+.row-title { font-size: 14px; font-weight: 500; }
+.row-desc { grid-column: 1; grid-row: 2; font-size: 13px; color: var(--text-secondary); }
+/* Labels sit on the secondary step, not the muted one: at 11px the muted grey
+   lands under 4.5:1 on a card. Size, case and tracking carry the hierarchy
+   instead, which is how shadcn separates a label from body copy. */
+.row-meta {
+  grid-row: 1 / span 2;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-muted);
-  text-align: right;
+  color: var(--text-secondary);
   white-space: nowrap;
 }
-.work-row .arrow { color: var(--text-muted); transition: transform 150ms ease, color 150ms ease; }
-a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
+.row .arrow { grid-row: 1 / span 2; color: var(--text-muted); transition: transform 150ms ease, color 150ms ease; }
+a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
+
+/* ── field list ── */
+.field-list { margin: 0; }
+.field {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.field:first-child { padding-top: 0; }
+.field:last-child { padding-bottom: 0; border-bottom: 0; }
+.field dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-secondary);
+}
+.field dd { margin: 0; font-size: 14px; font-family: var(--font-mono); }
+.field dd a { border-bottom: 1px solid var(--border); transition: border-color 150ms ease; }
+.field dd a:hover { border-bottom-color: var(--text-secondary); }
 
 /* ── stack strip ── */
 .stack-strip { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -369,7 +461,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   color: var(--text-secondary);
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 5px 10px;
 }
 
@@ -396,7 +488,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
 .game-stats {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -442,7 +534,8 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
 .score-box {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
   padding: 8px 16px;
   text-align: center;
   min-width: var(--score-w, 88px);
@@ -453,9 +546,16 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
-.score-box span { font-family: var(--font-mono); font-size: 20px; font-weight: 600; }
+/* Tabular figures so a counter ticking 9 to 10 does not widen the box and
+   shove the row beside it. */
+.score-box span {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 
 .hud {
   display: flex;
@@ -485,22 +585,81 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   margin-top: 20px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
-.statusline b { color: var(--text-secondary); font-weight: 500; }
-/* A refereed game says one sentence here rather than a row of counters. */
+.statusline b { color: var(--text-primary); font-weight: 500; }
+/* A refereed game says one sentence here rather than a row of counters, so it
+   takes the shape of an alert: a bordered strip that holds its height whether
+   or not there is anything to say, because a line appearing under the board
+   used to shift the toolbar down mid-game. */
 .statusline.solo {
-  display: block;
+  display: flex;
+  align-items: center;
   margin-top: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
   font-size: 12px;
   color: var(--text-secondary);
-  min-height: 18px;
+  min-height: 40px;
 }
-.statusline.solo.warn { color: var(--warning); }
+.statusline.solo.warn { color: var(--warning); border-color: var(--warning); }
 
 /* The row under the board: the cabinet's own actions first, then Arcade and
    Leaderboard last, in that order on every page. */
 .toolbar { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+
+/* ── the board overlay ──
+   Ready, paused and game over, in the shape of a dialog: a scrim across the
+   board and a panel standing on it, rather than text floating on a blur. Five
+   cabinets each carried a copy of this and had already drifted on scrim
+   opacity and title size, so it lives here now and a cabinet only decides when
+   to add .show. The radius is inherited so the scrim follows whatever corner
+   the board it covers happens to have. */
+#overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+}
+#overlay.show { display: flex; }
+/* The scrim is its own dark on every theme, because the board under it is, so
+   the panel and its type name their own colours here rather than following the
+   site tokens. On the light theme this is still a dark dialog over a dark
+   board, which is the point: the cabinet is a screen in a lit room. */
+.overlay-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 380px;
+  padding: 22px 26px;
+  text-align: center;
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
+}
+.overlay-panel h2 {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: #fafafa;
+}
+.overlay-panel p {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a1a1aa;
+}
+.overlay-panel p:empty { display: none; }
 
 /* Name the run, then submit it. Hidden until a run finishes, and shown by each
    game.js setting display, so the base state stays none here. */
@@ -511,17 +670,44 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   align-items: center;
   flex-wrap: wrap;
 }
-.submit-run input {
-  background: var(--bg-surface);
+.submit-run .run-status { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+
+/* ── input ──
+   One field shape for every text box on the site. The border, not a fill, is
+   what says "type here", so the field reads the same sitting on the page as it
+   does inside a panel. */
+.input, .submit-run input, .lobby input {
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 13px;
   padding: 7px 12px;
-  width: 150px;
+  transition: border-color 150ms ease;
 }
-.submit-run .run-status { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.input::placeholder, .submit-run input::placeholder, .lobby input::placeholder { color: var(--text-muted); }
+.input:focus-visible, .submit-run input:focus-visible, .lobby input:focus-visible { border-color: var(--border-focus); }
+.input:disabled, .submit-run input:disabled, .lobby input:disabled { opacity: 0.5; cursor: not-allowed; }
+.submit-run input { width: 150px; }
+
+/* ── kbd ── */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
 
 /* ── the room panel ──
    Create-or-join, the share link and the hint under them, shared by every
@@ -534,26 +720,18 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   margin-top: 16px;
 }
 .lobby-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.lobby input {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 15px;
-  padding: 7px 12px;
-}
+.lobby input { font-size: 15px; }
 .lobby label {
   font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 .lobby .hint {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-top: 10px;
   line-height: 1.6;
 }
@@ -565,7 +743,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   color: var(--text-secondary);
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 6px 10px;
   overflow-wrap: anywhere;
 }
@@ -588,7 +766,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   justify-content: center;
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: 16px;
@@ -610,7 +788,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: left;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
@@ -618,7 +796,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
 .board-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); }
 .board-table td.num { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
 .board-table tr:hover td { background: var(--bg-surface); }
-.board-table .rank { color: var(--text-muted); font-family: var(--font-mono); width: 40px; }
+.board-table .rank { color: var(--text-secondary); font-family: var(--font-mono); width: 40px; }
 .board-table tr.top .rank { color: var(--warning); }
 
 /* ── tabs ── */
@@ -628,7 +806,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   font-weight: 500;
   color: var(--text-secondary);
   padding: 8px 14px;
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   border-bottom: 2px solid transparent;
   transition: color 150ms ease;
   margin-bottom: -1px;
@@ -639,15 +817,38 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
 /* ── board controls ──
    Shared by /leaderboard/ and the board widget every game page mounts, so these
    live here rather than being copied into each page's own style block. */
-.sub-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+/* A group of pills is one segmented control, not a row of loose chips: the
+   group carries a sunk track and the pressed pill is the one lifted out of it.
+   That reads as a single choice at a glance, which a row of outlined chips
+   does not, and it stops a pressed pill shouting in full accent next to the
+   Play button. */
+.sub-pills, .mode-pills {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius);
+}
+.sub-pills { margin-bottom: 20px; }
 .pill {
   font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--text-secondary); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px;
-  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 .pill:hover { color: var(--text-primary); }
-.pill[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
-.board-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
+.pill[aria-pressed="true"] {
+  color: var(--text-primary);
+  background: var(--bg-base);
+  border-color: var(--border);
+  box-shadow: var(--shadow-xs);
+}
+.board-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-bottom: 14px; }
 .you { color: var(--success); font-family: var(--font-mono); font-size: 10px; margin-left: 8px; letter-spacing: 0.1em; }
 
 /* ── the board widget on a game page ── */
@@ -657,7 +858,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
 }
 .board-embed h2 { font-size: 15px; font-weight: 500; }
-.board-embed .full-board { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+.board-embed .full-board { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
 .board-embed .full-board:hover { color: var(--text-primary); }
 .board-embed .sub-pills { margin-bottom: 12px; }
 /* the page-level .empty is padded for a full-width panel and towers over a
@@ -673,7 +874,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   color: var(--text-secondary);
   font-size: 14px;
 }
-.empty .mono { color: var(--text-muted); font-size: 12px; }
+.empty .mono { color: var(--text-secondary); font-size: 12px; }
 
 /* ── footer ── */
 .site-footer {
@@ -689,7 +890,7 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
   padding-block: 28px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 .site-footer a { color: var(--text-secondary); transition: color 150ms ease; }
 .site-footer a:hover { color: var(--text-primary); }
@@ -715,6 +916,9 @@ a.work-row:hover .arrow { transform: translateX(3px); color: var(--text-primary)
 @media (max-width: 640px) {
   .section { padding-block: 48px; }
   .nav-links a { padding: 6px 7px; }
-  .work-row { grid-template-columns: 1fr; }
-  .work-tech { text-align: left; }
+  .row { grid-template-columns: 1fr auto; padding-inline: 18px; }
+  .row-meta { display: none; }
+  .card.flush > .card-header { padding: 18px 18px 16px; }
+  .card.flush > .card-footer { padding: 12px 18px; }
+  .field { grid-template-columns: 1fr; gap: 2px; }
 }
