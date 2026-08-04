@@ -1805,6 +1805,250 @@ function verifyAim3d(body) {
   return { ok: true, board: aim3Board(scenario, mode), score: run.score, detail };
 }
 
+/* ═══════════════ draw a perfect circle ═══════════════ */
+
+/* ── the engine ──
+   Duplicated, byte for byte, from circle/game.js. Same rule as the aim and
+   pacman engines: drift means the page shows an accuracy this referee does not
+   agree with, and every submission stops verifying. */
+
+  const CIRCLE_SIZE = 1000;
+  const CIRCLE_CX = 500, CIRCLE_CY = 500;
+  const CIRCLE_MIN_R = 70, CIRCLE_MAX_R = 470;
+  const CIRCLE_SAMPLES = 180;
+  const CIRCLE_MIN_POINTS = 36;
+  const CIRCLE_MAX_POINTS = 4000;
+  const CIRCLE_MAX_STEP = 24;
+  const CIRCLE_BACK = 3;
+  const CIRCLE_START_TOL = 22;
+  const CIRCLE_MIN_MS = 400, CIRCLE_MAX_MS = 40000;
+  const CIRCLE_MAX_GAP = 400;
+
+  function circleMulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* The seed is the whole setup: which spoke the stroke starts on and which way
+     it runs. Both come off the generator in this order, so a page and the
+     referee draw the same marker from the same number. */
+  function circleStart(seed) {
+    const rnd = circleMulberry32(seed >>> 0);
+    const deg = Math.floor(rnd() * 360);
+    const dir = rnd() < 0.5 ? 1 : -1;
+    return { deg, dir };
+  }
+
+  /* Screen space: y grows downward, so a rising angle is clockwise and dir 1 is
+     clockwise. */
+  function circleAngle(x, y) {
+    const a = Math.atan2(y - CIRCLE_CY, x - CIRCLE_CX) * 180 / Math.PI;
+    return a < 0 ? a + 360 : a;
+  }
+
+  function circleDelta(from, to) {
+    let d = to - from;
+    while (d > 180) d -= 360;
+    while (d <= -180) d += 360;
+    return d;
+  }
+
+  function circleRadius(x, y) {
+    const dx = x - CIRCLE_CX, dy = y - CIRCLE_CY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /* Every field is variable width, so each point is closed with a semicolon:
+     without it a gap of 12 followed by an x of 500 reads as a gap of 12500. */
+  const CIRCLE_TAPE_RE = /^(\d{1,4},\d{1,4},\d{1,4};)*$/;
+
+  function circleEncode(points) {
+    return points.map((p) => p.dt + "," + p.x + "," + p.y + ";").join("");
+  }
+
+  function circleDecode(tape) {
+    if (typeof tape !== "string" || tape.length > 16 * CIRCLE_MAX_POINTS) return null;
+    if (!CIRCLE_TAPE_RE.test(tape)) return null;
+    const points = [];
+    const re = /(\d{1,4}),(\d{1,4}),(\d{1,4});/g;
+    let m;
+    while ((m = re.exec(tape))) points.push({ dt: +m[1], x: +m[2], y: +m[3] });
+    return points;
+  }
+
+  /* Kasa's circle fit, in closed form: the algebraic least squares of
+     x² + y² + Ax + By + C = 0, which is eight sums and one 3x3 solve, with no
+     iteration to go wrong on either side. */
+  function circleDet3(m) {
+    return m[0] * (m[4] * m[8] - m[5] * m[7])
+         - m[1] * (m[3] * m[8] - m[5] * m[6])
+         + m[2] * (m[3] * m[7] - m[4] * m[6]);
+  }
+
+  function circleFit(xs, ys) {
+    const n = xs.length;
+    let Suu = 0, Suv = 0, Svv = 0, Su = 0, Sv = 0, Suz = 0, Svz = 0, Sz = 0;
+    for (let k = 0; k < n; k++) {
+      const u = xs[k], v = ys[k], z = u * u + v * v;
+      Suu += u * u; Suv += u * v; Svv += v * v;
+      Su += u; Sv += v;
+      Suz += u * z; Svz += v * z; Sz += z;
+    }
+    const base = [Suu, Suv, Su, Suv, Svv, Sv, Su, Sv, n];
+    const rhs = [-Suz, -Svz, -Sz];
+    const det = circleDet3(base);
+    if (!(Math.abs(det) > 1e-6)) return null;
+    const col = (c) => {
+      const m = base.slice();
+      m[c] = rhs[0]; m[c + 3] = rhs[1]; m[c + 6] = rhs[2];
+      return circleDet3(m) / det;
+    };
+    const A = col(0), B = col(1), C = col(2);
+    const rr = (A * A + B * B) / 4 - C;
+    if (!(rr > 0)) return null;
+    return { x: -A / 2, y: -B / 2, r: Math.sqrt(rr) };
+  }
+
+  /* The stroke is walked once to check it is a single sweep, then resampled at
+     a fixed number of equal angles so a fast hand and a slow one are measured
+     the same way, and a circle is fitted to those samples. Fitting the centre
+     rather than assuming it is what forgives drawing around the wrong point,
+     because being off centre is not being out of round, and that leaves the
+     whole penalty on the wobble, which is the thing anyone is testing. */
+  function circleReplay(seed, points) {
+    if (!Array.isArray(points) || points.length < CIRCLE_MIN_POINTS) {
+      return { ok: false, reason: "that stroke has too few points to be a circle" };
+    }
+    if (points.length > CIRCLE_MAX_POINTS) return { ok: false, reason: "bad stroke log" };
+
+    const start = circleStart(seed);
+    const first = points[0];
+    if (first.dt !== 0) return { ok: false, reason: "bad stroke log" };
+    if (first.x > CIRCLE_SIZE || first.y > CIRCLE_SIZE) {
+      return { ok: false, reason: "the stroke left the field" };
+    }
+    if (Math.abs(circleDelta(start.deg, circleAngle(first.x, first.y))) > CIRCLE_START_TOL) {
+      return { ok: false, reason: "the stroke did not start on the marker" };
+    }
+
+    const n = points.length;
+    const cum = new Array(n);
+    cum[0] = 0;
+    let timeMs = 0;
+    let prev = circleAngle(first.x, first.y);
+    let r = circleRadius(first.x, first.y);
+    if (r < CIRCLE_MIN_R || r > CIRCLE_MAX_R) {
+      return { ok: false, reason: "the stroke ran outside the ring" };
+    }
+
+    for (let i = 1; i < n; i++) {
+      const p = points[i];
+      if (p.dt > CIRCLE_MAX_GAP) return { ok: false, reason: "the stroke stalled" };
+      if (p.x > CIRCLE_SIZE || p.y > CIRCLE_SIZE) {
+        return { ok: false, reason: "the stroke left the field" };
+      }
+      timeMs += p.dt;
+      r = circleRadius(p.x, p.y);
+      if (r < CIRCLE_MIN_R || r > CIRCLE_MAX_R) {
+        return { ok: false, reason: "the stroke ran outside the ring" };
+      }
+      const here = circleAngle(p.x, p.y);
+      const step = circleDelta(prev, here) * start.dir;
+      if (step > CIRCLE_MAX_STEP) return { ok: false, reason: "the stroke jumped" };
+      if (step < -CIRCLE_BACK) return { ok: false, reason: "the stroke doubled back" };
+      prev = here;
+      /* a running maximum, so the small backwards wobble the check above allows
+         cannot make the sweep non-monotone and break the resample below */
+      cum[i] = Math.max(cum[i - 1], cum[i - 1] + step);
+    }
+
+    if (timeMs < CIRCLE_MIN_MS) return { ok: false, reason: "that stroke was too fast to be drawn" };
+    if (timeMs > CIRCLE_MAX_MS) return { ok: false, reason: "that stroke took too long" };
+
+    const total = cum[n - 1];
+    if (total < 360) return { ok: false, reason: "the circle never closed" };
+    if (total > 360 + CIRCLE_MAX_STEP) return { ok: false, reason: "the stroke ran past the close" };
+
+    /* The samples are taken in the frame the sweep ran in rather than the
+       field's, which costs nothing: a fitted circle does not care how the page
+       was holding the paper. */
+    const xs = new Array(CIRCLE_SAMPLES);
+    const ys = new Array(CIRCLE_SAMPLES);
+    let j = 1;
+    for (let k = 0; k < CIRCLE_SAMPLES; k++) {
+      const want = ((k + 0.5) * 360) / CIRCLE_SAMPLES;
+      while (j < n - 1 && cum[j] < want) j++;
+      const span = cum[j] - cum[j - 1];
+      const t = span > 0 ? (want - cum[j - 1]) / span : 0;
+      const lo = circleRadius(points[j - 1].x, points[j - 1].y);
+      const hi = circleRadius(points[j].x, points[j].y);
+      const rk = lo + (hi - lo) * t;
+      const th = (want * Math.PI) / 180;
+      xs[k] = rk * Math.cos(th);
+      ys[k] = rk * Math.sin(th);
+    }
+
+    const fit = circleFit(xs, ys);
+    if (!fit) return { ok: false, reason: "that stroke is not a circle" };
+    if (fit.r < CIRCLE_MIN_R || fit.r > CIRCLE_MAX_R) {
+      return { ok: false, reason: "the stroke ran outside the ring" };
+    }
+
+    let dev = 0;
+    for (let k = 0; k < CIRCLE_SAMPLES; k++) {
+      const dx = xs[k] - fit.x, dy = ys[k] - fit.y;
+      dev += Math.abs(Math.sqrt(dx * dx + dy * dy) - fit.r);
+    }
+    dev /= CIRCLE_SAMPLES;
+
+    const acc = Math.max(0, 1 - dev / fit.r);
+    return {
+      ok: true,
+      acc,
+      timeMs,
+      radius: fit.r,
+      dev,
+      pct: Math.round(acc * 10000) / 100,
+      score: -Math.round(acc * 1e6),
+    };
+  }
+
+  /* ── end of the engine ── */
+
+/* A drawing game cannot be replayed away the way a puzzle can: the gaps on the
+   tape are the browser's own timestamps and the hand behind them is nobody's
+   business here. The bounds on the gaps, the sample count, the maximum step and
+   the total time are the whole defence, and the accuracy itself is still
+   computed here rather than taken from the client. */
+function verifyCircle(body) {
+  const seed = Number(body.seed);
+  if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
+    return { ok: false, reason: "bad seed" };
+  }
+
+  const points = circleDecode(body.moves);
+  if (!points) return { ok: false, reason: "bad stroke log" };
+
+  const run = circleReplay(seed, points);
+  if (!run.ok) return run;
+
+  return {
+    ok: true,
+    board: "classic",
+    score: run.score,
+    detail: {
+      pct: run.pct,
+      timeMs: run.timeMs,
+      radius: Math.round(run.radius),
+      dev: Math.round(run.dev * 100) / 100,
+    },
+  };
+}
+
 /* ═══════════════ plumbing ═══════════════ */
 
 const GAMES = {
@@ -1816,15 +2060,17 @@ const GAMES = {
   pacman: verifyPacman,
   aim: verifyAim,
   aim3d: verifyAim3d,
+  circle: verifyCircle,
 };
 
 /* flowcode stores its rows in this database too, but it verifies them in its
    own Worker, which is where its word engine lives. Its boards are readable
    here so one page can render every game; submissions still go to that Worker. */
 /* Boards written by another Worker and only read from here. flowcode replays
-   its own runs because that needs its word engine; chess is rated by the
-   referee that watched the game, because a 1v1 match leaves no tape to replay. */
-const READ_ONLY_GAMES = ["flowcode", "chess"];
+   its own runs because that needs its word engine; chess and quoridor are rated
+   by the referee that watched the game, because a 1v1 match leaves no tape to
+   replay. */
+const READ_ONLY_GAMES = ["flowcode", "chess", "quoridor"];
 
 const BOARD_RE = /^[a-z0-9-]{1,32}$/;
 

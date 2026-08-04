@@ -142,10 +142,14 @@
     pacman: (s) => 4 + Math.min(46, Math.floor((s.points || 0) / 300)),
     aim: (s) => ({ easy: 6, medium: 12, hard: 22 }[s.mode] || 6),
     aim3d: (s) => ({ easy: 8, medium: 16, hard: 28 }[s.mode] || 8),
+    /* accuracy under 60% is a shape, not a circle, so the curve starts there */
+    circle: (s) => 3 + Math.min(37, Math.max(0, Math.round((s.pct || 0) - 60))),
     /* refereed games have no run to score, so they pay a flat rate for
        finishing one */
     codenames: (s) => (s.result === "win" ? 25 : 10),
     chess: (s) => (s.result === "win" ? 30 : s.result === "draw" ? 15 : 8),
+    quoridor: (s) => (s.result === "win" ? 26 : 10),
+    battleship: (s) => (s.result === "win" ? 20 : 8),
     tictactoe: (s) => (s.result === "win" ? 8 : s.result === "draw" ? 4 : 2),
   };
 
@@ -570,11 +574,35 @@
       },
     },
 
+    circle: {
+      label: "Perfect Circle",
+      path: "/circle/",
+      columns: ["Player", "Accuracy", "Radius", "Time", "When"],
+      row: (s) => [{ html: nameCell(s.name) }, { html: Number(s.pct || 0).toFixed(2) + "%", num: true },
+                   num(s.radius), { html: fmtTime(s.timeMs), num: true }, when(s.at)],
+      axes: [{ id: "range", label: "Range", options: RANGE }],
+      hint: "one stroke, all the way round",
+      /* The radius is on the board because it is the one thing that makes two
+         equal accuracies different runs: a small circle and a big one are not
+         the same test of a hand. */
+      resolve(st) {
+        const daily = st.range === "today";
+        return {
+          board: "classic" + (daily ? dailySuffix() : ""),
+          meta: daily
+            ? "today's strokes · " + utcDayKey(0) + " · resets at midnight UTC"
+            : "all-time board · one row per player, your roundest stroke counts",
+          empty: daily ? "No closed circles today yet." : "No verified circles yet.",
+        };
+      },
+    },
+
     /* Chess is the one board that is not a run at all. There is no tape to
        replay, so chess-match rates the match it refereed and writes the Elo
        straight into the same table. A rating is a running number rather than a
        personal best, which is why it has no daily twin: there is only ever one
-       current standing per player. */
+       current standing per player. Quoridor works the same way, from its own
+       referee. */
     chess: {
       label: "Chess",
       path: "/chess/",
@@ -584,6 +612,29 @@
         num(s.elo),
         num(s.games),
         { html: s.wins + "/" + s.draws + "/" + s.losses, num: true },
+        num(s.peak),
+        when(s.at),
+      ],
+      axes: [],
+      hint: "the ladder is empty",
+      resolve() {
+        return {
+          board: "elo",
+          meta: "rated 1v1 rooms · everyone starts at 1200 · rated by the referee, not the client",
+          empty: "Nobody has finished a rated game yet.",
+        };
+      },
+    },
+
+    quoridor: {
+      label: "Quoridor",
+      path: "/quoridor/",
+      columns: ["Player", "Elo", "Games", "W/L", "Peak", "When"],
+      row: (s) => [
+        { html: nameCell(s.name) },
+        num(s.elo),
+        num(s.games),
+        { html: s.wins + "/" + s.losses, num: true },
         num(s.peak),
         when(s.at),
       ],

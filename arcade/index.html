@@ -196,6 +196,44 @@
           "operatingSystem": "Any",
           "applicationCategory": "Game",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 13,
+          "name": "Draw a Perfect Circle",
+          "url": "https://maybaah.github.io/circle/",
+          "description": "One stroke, all the way around a dot, scored on how round it really is. Replay-verified against a best-fit circle.",
+          "genre": "Skill game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 14,
+          "name": "Quoridor",
+          "url": "https://maybaah.github.io/quoridor/",
+          "description": "Race a friend across a 9x9 board with ten walls each. Share a room link, refereed server-side, rated on an Elo ladder.",
+          "genre": "Abstract strategy game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "playMode": "MultiPlayer",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "VideoGame",
+          "position": 15,
+          "name": "Battleship",
+          "url": "https://maybaah.github.io/battleship/",
+          "description": "Five ships each, ten by ten, one square a turn. Share a room link; both fleets live on the server and neither page can see the other.",
+          "genre": "Strategy game",
+          "gamePlatform": "Web browser",
+          "operatingSystem": "Any",
+          "applicationCategory": "Game",
+          "playMode": "MultiPlayer",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
         }
       ]
     }
@@ -492,12 +530,75 @@
         </div>
       </article>
 
-      <article class="game-card soon fade-up" style="--d:14;" aria-label="Coming soon">
+      <article class="game-card fade-up" style="--d:14;">
         <header>
-          <h3>Cabinet 13</h3>
+          <h3>Perfect Circle</h3>
           <div class="hovercard">
-            <button class="badge badge-trigger" type="button" aria-describedby="pop-c12">Soon</button>
-            <div class="hovercard-panel" id="pop-c12" role="tooltip">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-circle">Stats</button>
+            <div class="hovercard-panel" id="pop-circle" role="tooltip">
+              <dl>
+                <dt>Your best</dt><dd id="st-circle">no strokes yet</dd>
+                <dt>Radius</dt><dd id="st-circle-r">none</dd>
+              </dl>
+            </div>
+          </div>
+        </header>
+        <p class="desc">One stroke, all the way around a dot, scored on how round
+          it really is. Lift early and it does not count.</p>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/circle/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/circle">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card fade-up" style="--d:15;">
+        <header>
+          <h3>Quoridor</h3>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-quoridor">Details</button>
+            <div class="hovercard-panel" id="pop-quoridor" role="tooltip">
+              <dl>
+                <dt>Players</dt><dd>1v1 only</dd>
+                <dt>Board</dt><dd>refereed, rated</dd>
+              </dl>
+            </div>
+          </div>
+        </header>
+        <p class="desc">Race a friend across nine by nine with ten walls each. No
+          wall may ever shut the other player out completely.</p>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/quoridor/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/quoridor">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card fade-up" style="--d:16;">
+        <header>
+          <h3>Battleship</h3>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-battleship">Details</button>
+            <div class="hovercard-panel" id="pop-battleship" role="tooltip">
+              <dl>
+                <dt>Players</dt><dd>1v1 only</dd>
+                <dt>Fleets</dt><dd>server side</dd>
+              </dl>
+            </div>
+          </div>
+        </header>
+        <p class="desc">Five ships each, ten by ten, one square a turn. Their
+          fleet is never sent to your page, so there is nothing to read.</p>
+        <div class="actions">
+          <a class="btn btn-primary btn-sm" href="/battleship/">Play</a>
+          <a class="btn btn-secondary btn-sm" href="https://github.com/Maybaah/battleship">Source&nbsp;↗</a>
+        </div>
+      </article>
+
+      <article class="game-card soon fade-up" style="--d:17;" aria-label="Coming soon">
+        <header>
+          <h3>Cabinet 16</h3>
+          <div class="hovercard">
+            <button class="badge badge-trigger" type="button" aria-describedby="pop-c16">Soon</button>
+            <div class="hovercard-panel" id="pop-c16" role="tooltip">
               <dl>
                 <dt>Status</dt><dd>wiring the CRT</dd>
               </dl>
@@ -585,6 +686,13 @@
       var bestPac = pac.slice().sort(function (a, b) { return b.points - a.points; })[0];
       document.getElementById("st-pacman").textContent = bestPac.points + " pts";
       document.getElementById("st-pacman-level").textContent = bestPac.level;
+    }
+
+    var circles = Arcade.getScores("circle");
+    if (circles.length) {
+      var bestCircle = circles.slice().sort(function (a, b) { return b.pct - a.pct; })[0];
+      document.getElementById("st-circle").textContent = bestCircle.pct.toFixed(2) + "%";
+      document.getElementById("st-circle-r").textContent = bestCircle.radius;
     }
   })();
 </script>

@@ -21,8 +21,11 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/pacman/` | Pac-Man: maze chase with the arcade ghost AI | [Maybaah/pacman](https://github.com/Maybaah/pacman) |
 | `/aim/` | Aim trainer: 30 targets, 3 sizes, misses cost time | [Maybaah/aim](https://github.com/Maybaah/aim) |
 | `/aim3d/` | Aim 3D: first person gridshot at your own sensitivity | [Maybaah/aim3d](https://github.com/Maybaah/aim3d) |
+| `/circle/` | Draw a perfect circle: one stroke, scored on roundness | [Maybaah/circle](https://github.com/Maybaah/circle) |
 | `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
 | `/chess/` | Chess: 1v1 rooms + pass and play | [Maybaah/chess](https://github.com/Maybaah/chess) |
+| `/quoridor/` | Quoridor: rated 1v1 rooms, nine by nine, ten walls each | [Maybaah/quoridor](https://github.com/Maybaah/quoridor) |
+| `/battleship/` | Battleship: 1v1 rooms, both fleets held by the referee | [Maybaah/battleship](https://github.com/Maybaah/battleship) |
 | `/codenames/` | Codenames: team lobbies, English and Russian decks | [Maybaah/codenames](https://github.com/Maybaah/codenames) |
 | `/flowcode/` | 3D typing trainer | [Maybaah/flowcode](https://github.com/Maybaah/flowcode) |
 
@@ -42,7 +45,10 @@ rebuild, only bound: the gaps between shots are the browser's own timestamps, so
 it holds a floor and a ceiling over them and still computes the score itself.
 Aim 3D submits the yaw and pitch of each shot rather than a point on a page, and
 the Worker fires the ray itself against the spheres it rebuilt from the seed.
-Sensitivity never leaves the browser, so no setting can buy a score.
+Sensitivity never leaves the browser, so no setting can buy a score. Perfect
+Circle is the third of that kind: the tape is the stroke itself, point by point,
+and the Worker walks it, resamples it at 180 equal angles and fits a circle to
+it before deciding how round it was.
 
 Every game stores its rows in the one `arcade` database, in the same `scores`
 table keyed `(game, board, player)`. flowcode is the exception in one respect
@@ -50,14 +56,16 @@ only: its runs are replayed by its own Worker, because that verification needs
 the game's word engine. The rows still land here, so `/leaderboard/` reads every
 board through a single API and a player keeps one identity across every game.
 
-Tic tac toe, chess and codenames leave this model entirely. Several people
-playing at once produce no single tape, so `tictactoe-match`, `chess-match` and
+Tic tac toe, chess, quoridor, battleship and codenames leave this model
+entirely. Several people playing at once produce no single tape, so
+`tictactoe-match`, `chess-match`, `quoridor-match`, `battleship-match` and
 `codenames-room` referee the game while it happens, from a Durable Object per
-room. Tic tac toe stores nothing at all. Chess keeps no position either, but
-does write an Elo rating for each finished 1v1 game, computed by the referee
-from the result it watched happen. Codenames has a second reason to be
-refereed: half the table is not allowed to see the board, so the key is held by
-the room and sent down only to the two spymasters.
+room. Tic tac toe and battleship store nothing at all. Chess and quoridor keep
+no position either, but each writes an Elo rating for every finished 1v1 game,
+computed by the referee from the result it watched happen. Codenames and
+battleship have a second reason to be refereed: half the players are not allowed
+to see part of the board. The codenames key goes down only to the two
+spymasters, and a battleship page is never sent the other fleet at all.
 
 A finished run counts on two boards: one that keeps a player's best ever, and
 one for the day it was played, dated by the Worker's own clock so nobody can
@@ -76,9 +84,12 @@ plays the same board.
 | Pac-Man | `classic` | `classic-<YYYYMMDD>` |
 | Aim trainer | `easy` / `medium` / `hard` | `<mode>-<YYYYMMDD>` |
 | Aim 3D | `<mode>` (30 kills), `sprint-<mode>`, `track-<mode>` | `<board>-<YYYYMMDD>` |
+| Perfect Circle | `classic` | `classic-<YYYYMMDD>` |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
 | Chess | `elo` | none |
+| Quoridor | `elo` | none |
+| Battleship | none | none |
 | Codenames | none | none |
 
 Every board above is rendered from one description in
@@ -86,14 +97,16 @@ Every board above is rendered from one description in
 each game page mounts under itself read. Adding a board in one place and not the
 other is how the same board ends up showing two different days.
 
-Tic tac toe and codenames have no board at all. Tic tac toe is a solved game, so
-two players who know what they are doing draw every time and there is nothing
-worth ranking; codenames is a party game scored by a table of friends, and a
-ladder would only measure who brought the best teammates. Chess has a board, but not a run-shaped one. It ranks an Elo rating
-instead of a best run, which is why it is the one board with no daily twin, and
-why the rating can fall as well as rise. Because two cooperating browsers are
-exactly what a ladder has to survive, `chess-match` only rates games with two
-distinct players, refuses to rate a resignation inside ten plies, and holds the
+Tic tac toe, battleship and codenames have no board at all. Tic tac toe is a
+solved game, so two players who know what they are doing draw every time and
+there is nothing worth ranking; battleship is half coin toss, and a ladder there
+would rank whoever guessed the first square; codenames is a party game scored by
+a table of friends, and a ladder would only measure who brought the best
+teammates. Chess and quoridor have a board, but not a run-shaped one. They rank
+an Elo rating instead of a best run, which is why they are the boards with no
+daily twin, and why the rating can fall as well as rise. Because two cooperating
+browsers are exactly what a ladder has to survive, both referees only rate games
+with two distinct players, refuse to rate a short resignation, and hold the
 rating flat after the same pair have traded three games in a day.
 
 Games load [`assets/arcade.js`](assets/arcade.js) from this repo: it holds the
