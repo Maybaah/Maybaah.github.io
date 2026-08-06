@@ -1814,34 +1814,15 @@ function verifyAim3d(body) {
 
   const CIRCLE_SIZE = 1000;
   const CIRCLE_CX = 500, CIRCLE_CY = 500;
-  const CIRCLE_MIN_R = 70, CIRCLE_MAX_R = 470;
+  const CIRCLE_MIN_R = 25, CIRCLE_MAX_R = 495;
   const CIRCLE_SAMPLES = 180;
-  const CIRCLE_MIN_POINTS = 36;
+  const CIRCLE_MIN_POINTS = 24;
   const CIRCLE_MAX_POINTS = 4000;
-  const CIRCLE_MAX_STEP = 24;
-  const CIRCLE_BACK = 3;
-  const CIRCLE_START_TOL = 22;
-  const CIRCLE_MIN_MS = 400, CIRCLE_MAX_MS = 40000;
-  const CIRCLE_MAX_GAP = 400;
-
-  function circleMulberry32(a) {
-    return function () {
-      a |= 0; a = (a + 0x6d2b79f5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
-  /* The seed is the whole setup: which spoke the stroke starts on and which way
-     it runs. Both come off the generator in this order, so a page and the
-     referee draw the same marker from the same number. */
-  function circleStart(seed) {
-    const rnd = circleMulberry32(seed >>> 0);
-    const deg = Math.floor(rnd() * 360);
-    const dir = rnd() < 0.5 ? 1 : -1;
-    return { deg, dir };
-  }
+  const CIRCLE_MAX_STEP = 60;
+  const CIRCLE_BACK = 20;
+  const CIRCLE_DIR_LOCK = 5;
+  const CIRCLE_MIN_MS = 250, CIRCLE_MAX_MS = 120000;
+  const CIRCLE_MAX_GAP = 1500;
 
   /* Screen space: y grows downward, so a rising angle is clockwise and dir 1 is
      clockwise. */
@@ -1860,6 +1841,24 @@ function verifyAim3d(body) {
   function circleRadius(x, y) {
     const dx = x - CIRCLE_CX, dy = y - CIRCLE_CY;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /* The stroke names its own frame: it starts wherever the pointer went down and
+     runs whichever way it first turned, both read straight off the tape so the
+     page and the referee still measure the same run. The direction locks on the
+     first few degrees and never moves after, which is what lets the page track a
+     sweep live without knowing yet how it ends. */
+  function circleFrame(points) {
+    const deg = circleAngle(points[0].x, points[0].y);
+    let acc = 0;
+    let prev = deg;
+    for (let i = 1; i < points.length; i++) {
+      const here = circleAngle(points[i].x, points[i].y);
+      acc += circleDelta(prev, here);
+      prev = here;
+      if (Math.abs(acc) >= CIRCLE_DIR_LOCK) return { deg, dir: acc > 0 ? 1 : -1 };
+    }
+    return { deg, dir: 1 };
   }
 
   /* Every field is variable width, so each point is closed with a semicolon:
@@ -1919,20 +1918,17 @@ function verifyAim3d(body) {
      rather than assuming it is what forgives drawing around the wrong point,
      because being off centre is not being out of round, and that leaves the
      whole penalty on the wobble, which is the thing anyone is testing. */
-  function circleReplay(seed, points) {
+  function circleReplay(points) {
     if (!Array.isArray(points) || points.length < CIRCLE_MIN_POINTS) {
       return { ok: false, reason: "that stroke has too few points to be a circle" };
     }
     if (points.length > CIRCLE_MAX_POINTS) return { ok: false, reason: "bad stroke log" };
 
-    const start = circleStart(seed);
+    const start = circleFrame(points);
     const first = points[0];
     if (first.dt !== 0) return { ok: false, reason: "bad stroke log" };
     if (first.x > CIRCLE_SIZE || first.y > CIRCLE_SIZE) {
       return { ok: false, reason: "the stroke left the field" };
-    }
-    if (Math.abs(circleDelta(start.deg, circleAngle(first.x, first.y))) > CIRCLE_START_TOL) {
-      return { ok: false, reason: "the stroke did not start on the marker" };
     }
 
     const n = points.length;
@@ -1969,8 +1965,10 @@ function verifyAim3d(body) {
     if (timeMs < CIRCLE_MIN_MS) return { ok: false, reason: "that stroke was too fast to be drawn" };
     if (timeMs > CIRCLE_MAX_MS) return { ok: false, reason: "that stroke took too long" };
 
+    /* a stroke that lands exactly on 360 is a closed circle, and floating point
+       is the only reason it would read as 359.999999 here */
     const total = cum[n - 1];
-    if (total < 360) return { ok: false, reason: "the circle never closed" };
+    if (total < 360 - 1e-6) return { ok: false, reason: "the circle never closed" };
     if (total > 360 + CIRCLE_MAX_STEP) return { ok: false, reason: "the stroke ran past the close" };
 
     /* The samples are taken in the frame the sweep ran in rather than the
@@ -2033,7 +2031,7 @@ function verifyCircle(body) {
   const points = circleDecode(body.moves);
   if (!points) return { ok: false, reason: "bad stroke log" };
 
-  const run = circleReplay(seed, points);
+  const run = circleReplay(points);
   if (!run.ok) return run;
 
   return {
