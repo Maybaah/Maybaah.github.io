@@ -22,9 +22,8 @@
 
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  /* ornament only: this measures 4.12:1 on the base, under AA, so nothing
-     a reader reads may use it. Reading text takes --text-secondary. */
-  --text-muted: #71717a;
+  /* meta and captions: 5.2:1 on the base. Body text takes --text-secondary. */
+  --text-muted: #85858d;
 
   --accent: #e4e4e7;
   --accent-hover: #fafafa;
@@ -46,6 +45,11 @@
 
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.28);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.34), 0 1px 2px -1px rgba(0, 0, 0, 0.34);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --paper: #f2efe6;
+  --paper-ink: #1d1b16;
+  --paper-faint: #77705f;
 }
 
 /* ── themes ──────────────────────────────────────────────────────────────
@@ -213,19 +217,32 @@ main { flex: 1; }
 .section + .section { padding-top: 0; }
 
 /* ── type scale ── */
-h1 { font-size: clamp(32px, 6vw, 48px); font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
-h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
-h3 { font-size: 16px; font-weight: 600; }
+h1 { font-size: clamp(32px, 6vw, 48px); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; }
+h2 { font-size: 24px; font-weight: 500; letter-spacing: -0.01em; }
+h3 { font-size: 16px; font-weight: 500; }
 .lead { font-size: 18px; color: var(--text-secondary); }
 .mono { font-family: var(--font-mono); }
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
+  font-size: 12px;
   color: var(--text-secondary);
+}
+
+/* The cabinet plate: the number a game was given when it went into the hall,
+   on the card that sells it and on the game's own head. Nowhere else. */
+.plate, .game-head .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: fit-content;
 }
 
 /* ── nav ── */
@@ -247,8 +264,7 @@ h3 { font-size: 16px; font-weight: 600; }
 .wordmark {
   font-family: var(--font-mono);
   font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
 }
 .wordmark .tld { color: var(--text-secondary); font-weight: 400; }
 .wordmark { flex: none; }
@@ -271,7 +287,7 @@ h3 { font-size: 16px; font-weight: 600; }
   color: var(--text-secondary);
   padding: 6px 10px;
   border-radius: var(--radius-sm);
-  transition: color 150ms ease, background 150ms ease;
+  transition: color 150ms var(--ease), background-color 150ms var(--ease);
 }
 .nav-links a:hover { color: var(--text-primary); background: var(--bg-elevated); }
 .nav-links a[aria-current="page"] { color: var(--text-primary); }
@@ -285,7 +301,7 @@ h3 { font-size: 16px; font-weight: 600; }
   gap: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
-  padding: 4px 11px;
+  padding: 4px 12px;
   margin-right: 4px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -312,7 +328,7 @@ h3 { font-size: 16px; font-weight: 600; }
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--warning);
-  animation: coin-rise 2600ms ease forwards;
+  animation: coin-rise 2600ms var(--ease) forwards;
 }
 @keyframes coin-rise {
   0% { opacity: 0; transform: translateY(8px); }
@@ -329,12 +345,14 @@ h3 { font-size: 16px; font-weight: 600; }
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  padding: 9px 18px;
+  padding: 8px 16px;
   border-radius: var(--radius);
   border: 1px solid transparent;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), color 150ms var(--ease), transform 120ms var(--ease);
   white-space: nowrap;
 }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn-lg { padding: 12px 20px; }
 .btn-primary { background: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-secondary { border-color: var(--border); color: var(--text-primary); }
@@ -351,14 +369,11 @@ h3 { font-size: 16px; font-weight: 600; }
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: 12px;
   color: var(--text-secondary);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 2px 10px;
 }
 .badge .dot {
   width: 6px;
@@ -388,15 +403,15 @@ h3 { font-size: 16px; font-weight: 600; }
 }
 .card-header { display: grid; grid-template-columns: 1fr; gap: 6px; align-items: start; }
 .card-header:has(.card-action) { grid-template-columns: 1fr auto; }
-.card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.card-title { font-size: 16px; font-weight: 500; }
 .card-description { color: var(--text-secondary); font-size: 14px; }
 .card-action { grid-column: 2; grid-row: 1 / span 2; justify-self: end; align-self: start; }
 .card-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
 .card.flush { padding: 0; }
-.card.flush > .card-header { padding: 22px 22px 18px; }
+.card.flush > .card-header { padding: 24px 24px 20px; }
 .card.flush > .card-footer {
-  padding: 14px 22px;
+  padding: 16px 24px;
   border-top: 1px solid var(--border-subtle);
   font-size: 13px;
   color: var(--text-secondary);
@@ -409,26 +424,23 @@ h3 { font-size: 16px; font-weight: 600; }
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 2px 16px;
-  padding: 14px 22px;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border-subtle);
-  transition: background 150ms ease;
+  transition: background-color 150ms var(--ease);
 }
 .row:last-child { border-bottom: 0; }
 a.row:hover { background: var(--bg-elevated); }
 .row-title { font-size: 14px; font-weight: 500; }
 .row-desc { grid-column: 1; grid-row: 2; font-size: 13px; color: var(--text-secondary); }
-/* Labels sit on the secondary step, not the muted one: at 11px the muted grey
-   lands under 4.5:1 on a card. Size, case and tracking carry the hierarchy
-   instead, which is how shadcn separates a label from body copy. */
 .row-meta {
   grid-row: 1 / span 2;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
 }
-.row .arrow { grid-row: 1 / span 2; color: var(--text-muted); transition: transform 150ms ease, color 150ms ease; }
-a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
+.row .arrow { grid-row: 1 / span 2; color: var(--text-muted); transition: color 150ms var(--ease); }
+a.row:hover .arrow { color: var(--text-primary); }
 
 /* ── field list ── */
 .field-list { margin: 0; }
@@ -437,20 +449,17 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   grid-template-columns: 92px 1fr;
   gap: 4px 16px;
   align-items: baseline;
-  padding: 13px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border-subtle);
 }
 .field:first-child { padding-top: 0; }
 .field:last-child { padding-bottom: 0; border-bottom: 0; }
 .field dt {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 .field dd { margin: 0; font-size: 14px; font-family: var(--font-mono); }
-.field dd a { border-bottom: 1px solid var(--border); transition: border-color 150ms ease; }
+.field dd a { border-bottom: 1px solid var(--border); transition: border-color 150ms var(--ease); }
 .field dd a:hover { border-bottom-color: var(--text-secondary); }
 
 /* ── stack strip ── */
@@ -462,29 +471,59 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 5px 10px;
+  padding: 4px 8px;
 }
 
-/* ── game cards (arcade) ── */
+/* ── game cards (arcade) ──
+   Each card is a cabinet: a dark screen showing a still of its board, then the
+   plate, the name and one line on how it plays. The whole card is the link to
+   the game; the stats trigger and the source link sit above that link. */
 .game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
   gap: 16px;
 }
 .game-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  transition: border-color 150ms ease, background 150ms ease;
+  border-radius: 16px;
+  padding: 8px;
+  transition: border-color 150ms var(--ease);
 }
-.game-card:hover { border-color: var(--border-focus); background: var(--bg-elevated); }
-.game-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.game-card h3 { font-size: 18px; }
+.game-card:hover { border-color: var(--border-focus); }
+.game-card:has(h3 a:focus-visible) { outline: 2px solid var(--accent-hover); outline-offset: 2px; }
+.game-card h3 a:focus-visible { outline: none; }
+.game-card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.game-card .screen {
+  height: 136px;
+  border-radius: 8px;
+  background: #0d0d0f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.game-card .screen svg { width: 100%; height: 100%; display: block; max-width: none; }
+.game-card .body { display: flex; flex-direction: column; gap: 8px; padding: 16px 12px 8px; flex: 1; }
+.game-card header { display: flex; align-items: center; gap: 8px; }
+.game-card header .hovercard { margin-left: auto; z-index: 2; }
+.game-card h3 { font-size: 16px; }
 .game-card .desc { color: var(--text-secondary); font-size: 14px; flex: 1; }
+.game-card .actions { display: flex; gap: 16px; align-items: center; margin-top: 8px; }
+.game-card .go { font-size: 13px; font-weight: 500; }
+.game-card .src {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: color 150ms var(--ease);
+}
+.game-card .src:hover { color: var(--text-primary); }
+.game-card.soon { border-style: dashed; background: transparent; }
+.game-card.soon .screen { background: transparent; border-style: dashed; border-color: var(--border); }
+
 /* ── hover card ──
    A card's numbers are the least of what it has to say and they were sitting
    in the middle of every one of them. They live in here now, opened by the
@@ -501,7 +540,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
    liveness nothing measured, and it read the same on eleven of thirteen cards. */
 .badge-trigger {
   cursor: pointer;
-  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease);
 }
 .badge-trigger::after {
   content: "";
@@ -510,7 +549,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   border-right: 1px solid currentColor;
   border-bottom: 1px solid currentColor;
   transform: translateY(-1px) rotate(45deg);
-  transition: transform 150ms ease;
+  transition: transform 150ms var(--ease);
 }
 .hovercard:hover .badge-trigger,
 .hovercard:focus-within .badge-trigger {
@@ -529,7 +568,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   right: 0;
   z-index: 60;
   min-width: 208px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -537,7 +576,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   opacity: 0;
   visibility: hidden;
   transform: translateY(-4px);
-  transition: opacity 130ms ease, transform 130ms ease, visibility 130ms;
+  transition: opacity 180ms var(--ease), transform 180ms var(--ease), visibility 180ms;
 }
 .hovercard:hover .hovercard-panel,
 .hovercard:focus-within .hovercard-panel {
@@ -552,7 +591,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   margin: 0;
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 7px 18px;
+  gap: 8px 16px;
   font-size: 12px;
 }
 .hovercard-panel dt { color: var(--text-secondary); white-space: nowrap; }
@@ -563,9 +602,6 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
-.game-card .actions { display: flex; gap: 8px; align-items: center; }
-.game-card.soon { border-style: dashed; opacity: 0.75; }
-.game-card.soon:hover { background: var(--bg-surface); }
 
 /* ── the cabinet shell ──
    Every game page is the same frame: a centred column, a head carrying the
@@ -587,17 +623,17 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   flex-wrap: wrap;
   margin-top: 40px;
 }
-.game-head h1 { font-size: 28px; margin-top: 6px; }
+.game-head h1 { font-size: 28px; margin-top: 8px; }
 
 /* Pills that pick a variant. Inside the head they sit beside the title; a
    cabinet with too many of them to fit puts the group under the head instead
    and picks up the gap from the sibling rule. */
 .mode-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.game-head + .mode-pills { margin-top: 18px; }
+.game-head + .mode-pills { margin-top: 16px; }
 
 /* Counters, in the two shapes a cabinet uses: boxed totals beside the title,
    or a mono strip under it with the toggles pushed to the right by .spacer. */
-.score-row { display: flex; gap: 10px; }
+.score-row { display: flex; gap: 8px; }
 .score-box {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -609,10 +645,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
 }
 .score-box label {
   display: block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 /* Tabular figures so a counter ticking 9 to 10 does not widen the box and
@@ -620,14 +653,14 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
 .score-box span {
   font-family: var(--font-mono);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .hud {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   flex-wrap: wrap;
   margin-top: 24px;
   font-family: var(--font-mono);
@@ -640,7 +673,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   display: inline-block;
   text-align: right;
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 .hud .spacer { flex: 1; }
@@ -651,7 +684,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   flex-wrap: wrap;
   margin-top: 20px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 .statusline b { color: var(--text-primary); font-weight: 500; }
@@ -663,7 +696,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   display: flex;
   align-items: center;
   margin-top: 16px;
-  padding: 10px 14px;
+  padding: 8px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-surface);
@@ -693,8 +726,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   justify-content: center;
   padding: 20px;
   border-radius: inherit;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.62);
 }
 #overlay.show { display: flex; }
 /* The scrim is its own dark on every theme, because the board under it is, so
@@ -707,7 +739,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   align-items: center;
   gap: 12px;
   max-width: 380px;
-  padding: 22px 26px;
+  padding: 24px;
   text-align: center;
   background: #18181b;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -715,14 +747,12 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.6);
 }
 .overlay-panel h2 {
-  font-family: var(--font-mono);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   color: #fafafa;
 }
 .overlay-panel p {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
   color: #a1a1aa;
 }
@@ -737,7 +767,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   align-items: center;
   flex-wrap: wrap;
 }
-.submit-run .run-status { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.submit-run .run-status { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
 
 /* ── input ──
    One field shape for every text box on the site. The border, not a fill, is
@@ -751,8 +781,8 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 13px;
-  padding: 7px 12px;
-  transition: border-color 150ms ease;
+  padding: 8px 12px;
+  transition: border-color 150ms var(--ease);
 }
 .input::placeholder, .submit-run input::placeholder, .lobby input::placeholder { color: var(--text-muted); }
 .input:focus-visible, .submit-run input:focus-visible, .lobby input:focus-visible { border-color: var(--border-focus); }
@@ -766,7 +796,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 5px;
+  padding: 0 6px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -789,20 +819,16 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
 .lobby-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .lobby input { font-size: 15px; }
 .lobby label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: 13px;
   color: var(--text-secondary);
 }
 .lobby .hint {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
-  margin-top: 10px;
+  margin-top: 12px;
   line-height: 1.6;
 }
-#join-code { letter-spacing: 0.24em; text-transform: uppercase; width: 110px; }
+#join-code { letter-spacing: 0.2em; text-transform: uppercase; width: 112px; }
 .share { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
 .share code {
   font-family: var(--font-mono);
@@ -811,7 +837,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  padding: 4px 8px;
   overflow-wrap: anywhere;
 }
 
@@ -823,7 +849,7 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   display: none;
   grid-template-columns: repeat(3, 48px);
   grid-template-rows: repeat(3, 48px);
-  gap: 6px;
+  gap: 8px;
   width: max-content;
   margin-inline: auto;
 }
@@ -850,18 +876,15 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
 /* ── tables / leaderboard ── */
 .board-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .board-table th {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text-secondary);
   text-align: left;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 .board-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); }
-.board-table td.num { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+.board-table td.num { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
 .board-table tr:hover td { background: var(--bg-surface); }
 .board-table .rank { color: var(--text-secondary); font-family: var(--font-mono); width: 40px; }
 .board-table tr.top .rank { color: var(--warning); }
@@ -872,10 +895,10 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   border-bottom: 2px solid transparent;
-  transition: color 150ms ease;
+  transition: color 150ms var(--ease);
   margin-bottom: -1px;
 }
 .tab:hover { color: var(--text-primary); }
@@ -895,18 +918,18 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   flex-wrap: wrap;
   width: fit-content;
   max-width: 100%;
-  padding: 3px;
+  padding: 4px;
   background: var(--bg-elevated);
   border-radius: var(--radius);
 }
 .sub-pills { margin-bottom: 20px; }
 .pill {
-  font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 13px;
   color: var(--text-secondary);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 5px 12px;
-  transition: color 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+  padding: 4px 12px;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease);
 }
 .pill:hover { color: var(--text-primary); }
 .pill[aria-pressed="true"] {
@@ -915,17 +938,17 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   border-color: var(--border);
   box-shadow: var(--shadow-xs);
 }
-.board-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-bottom: 14px; }
-.you { color: var(--success); font-family: var(--font-mono); font-size: 10px; margin-left: 8px; letter-spacing: 0.1em; }
+.board-meta { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+.you { color: var(--success); font-family: var(--font-mono); font-size: 11px; margin-left: 8px; }
 
 /* ── the board widget on a game page ── */
 .board-embed { margin-top: 40px; }
 .board-embed > header {
   display: flex; align-items: baseline; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
 }
-.board-embed h2 { font-size: 15px; font-weight: 500; }
-.board-embed .full-board { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.board-embed h2 { font-size: 16px; font-weight: 500; }
+.board-embed .full-board { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
 .board-embed .full-board:hover { color: var(--text-primary); }
 .board-embed .sub-pills { margin-bottom: 12px; }
 /* the page-level .empty is padded for a full-width panel and towers over a
@@ -959,19 +982,21 @@ a.row:hover .arrow { transform: translateX(3px); color: var(--text-primary); }
   font-size: 12px;
   color: var(--text-secondary);
 }
-.site-footer a { color: var(--text-secondary); transition: color 150ms ease; }
+.site-footer a { color: var(--text-secondary); transition: color 150ms var(--ease); }
 .site-footer a:hover { color: var(--text-primary); }
 .site-footer .links { display: flex; gap: 16px; flex-wrap: wrap; }
 
 /* ── motion ── */
+/* One entrance per page. The stagger stops at the fifth item, so a grid of
+   fifteen cabinets is all there within half a second. */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-up {
   opacity: 0;
-  animation: fade-up 500ms ease forwards;
-  animation-delay: calc(var(--d, 0) * 70ms);
+  animation: fade-up 420ms var(--ease) forwards;
+  animation-delay: calc(min(var(--d, 0), 5) * 50ms);
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
