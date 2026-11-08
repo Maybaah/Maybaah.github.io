@@ -146,7 +146,9 @@ In the game repo:
 In the site repo:
 
 - [ ] `verify<Game>()` in `worker/src/index.js`, registered in `GAMES`
-- [ ] Card on `/arcade/` plus its entry in the page's `ItemList` JSON-LD
+- [ ] Card on `/arcade/` plus its entry in the page's `ItemList` JSON-LD. The card
+      carries its cabinet number in `.plate` and a still of the board as an
+      inline SVG in `.screen` (viewBox 300x136, dark, the game's own colours)
 - [ ] Tab and render function on `/leaderboard/`, with Today / All-time pills
 - [ ] `sitemap.xml`
 - [ ] The board table in `README.md`
