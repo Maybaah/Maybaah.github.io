@@ -114,6 +114,13 @@
   </url>
 
   <url>
+    <loc>https://maybaah.github.io/ultimate/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://maybaah.github.io/leaderboard/</loc>
     <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
