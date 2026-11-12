@@ -151,6 +151,7 @@
     quoridor: (s) => (s.result === "win" ? 26 : 10),
     battleship: (s) => (s.result === "win" ? 20 : 8),
     tictactoe: (s) => (s.result === "win" ? 8 : s.result === "draw" ? 4 : 2),
+    ultimate: (s) => (s.result === "win" ? 14 : s.result === "draw" ? 8 : 4),
   };
 
   function wallet() {
