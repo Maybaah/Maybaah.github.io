@@ -23,6 +23,7 @@ Hand-built static pages for GitHub Pages: no framework, no build step, no depend
 | `/aim3d/` | Aim 3D: first person gridshot at your own sensitivity | [Maybaah/aim3d](https://github.com/Maybaah/aim3d) |
 | `/circle/` | Draw a perfect circle: one stroke, scored on roundness | [Maybaah/circle](https://github.com/Maybaah/circle) |
 | `/tictactoe/` | Tic tac toe: 1v1 rooms + bot | [Maybaah/tictactoe](https://github.com/Maybaah/tictactoe) |
+| `/ultimate/` | Ultimate tic tac toe: nine boards in one, 1v1 rooms + bot | [Maybaah/ultimate](https://github.com/Maybaah/ultimate) |
 | `/chess/` | Chess: 1v1 rooms + pass and play | [Maybaah/chess](https://github.com/Maybaah/chess) |
 | `/quoridor/` | Quoridor: rated 1v1 rooms, nine by nine, ten walls each | [Maybaah/quoridor](https://github.com/Maybaah/quoridor) |
 | `/battleship/` | Battleship: 1v1 rooms, both fleets held by the referee | [Maybaah/battleship](https://github.com/Maybaah/battleship) |
@@ -56,11 +57,12 @@ only: its runs are replayed by its own Worker, because that verification needs
 the game's word engine. The rows still land here, so `/leaderboard/` reads every
 board through a single API and a player keeps one identity across every game.
 
-Tic tac toe, chess, quoridor, battleship and codenames leave this model
-entirely. Several people playing at once produce no single tape, so
-`tictactoe-match`, `chess-match`, `quoridor-match`, `battleship-match` and
-`codenames-room` referee the game while it happens, from a Durable Object per
-room. Tic tac toe and battleship store nothing at all. Chess and quoridor keep
+Tic tac toe, ultimate tic tac toe, chess, quoridor, battleship and codenames
+leave this model entirely. Several people playing at once produce no single
+tape, so `tictactoe-match`, `ultimate-match`, `chess-match`,
+`quoridor-match`, `battleship-match` and `codenames-room` referee the game
+while it happens, from a Durable Object per room. Both tic tac toes and
+battleship store nothing at all. Chess and quoridor keep
 no position either, but each writes an Elo rating for every finished 1v1 game,
 computed by the referee from the result it watched happen. Codenames and
 battleship have a second reason to be refereed: half the players are not allowed
@@ -87,6 +89,7 @@ plays the same board.
 | Perfect Circle | `classic` | `classic-<YYYYMMDD>` |
 | flowcode | `<mode>-all` | `<mode>-<YYYYMMDD>` |
 | Tic tac toe | none | none |
+| Ultimate tic tac toe | none | none |
 | Chess | `elo` | none |
 | Quoridor | `elo` | none |
 | Battleship | none | none |
@@ -97,9 +100,11 @@ Every board above is rendered from one description in
 each game page mounts under itself read. Adding a board in one place and not the
 other is how the same board ends up showing two different days.
 
-Tic tac toe, battleship and codenames have no board at all. Tic tac toe is a
-solved game, so two players who know what they are doing draw every time and
-there is nothing worth ranking; battleship is half coin toss, and a ladder there
+Tic tac toe, ultimate tic tac toe, battleship and codenames have no board at
+all. Tic tac toe is a solved game, so two players who know what they are doing
+draw every time and there is nothing worth ranking; the ultimate one is not
+solved, but its bot games are the page's own word and its rooms are unrated;
+battleship is half coin toss, and a ladder there
 would rank whoever guessed the first square; codenames is a party game scored by
 a table of friends, and a ladder would only measure who brought the best
 teammates. Chess and quoridor have a board, but not a run-shaped one. They rank
